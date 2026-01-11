@@ -1,0 +1,39 @@
+{% load i18n %}
+
+{# 
+  Subject block for the activation email.
+  This will be used as the email subject line.
+#}
+{% block subject %}
+{% blocktrans %}Account activation on CareerIDream{% endblocktrans %}
+{% endblock subject %}
+
+{# 
+  Text body block for plain-text email clients.
+  Includes activation instructions and a direct link.
+#}
+{% block text_body %}
+{% blocktrans %}You are receiving this email because you registered for an CareerIDream account and need to complete your activation process.{% endblocktrans %}
+
+{% trans "Please click the link below to activate your CareerIDream account:" %}
+http://localhost:3000/{{ url|safe }}
+
+{% trans "Thank you for choosing CareerIDream!" %}
+
+{% blocktrans %}The CareerIDream Team{% endblocktrans %}
+{% endblock text_body %}
+
+{# 
+  HTML body block for rich email clients.
+  Provides a styled activation message and link.
+#}
+{% block html_body %}
+<p>{% blocktrans %}You are receiving this email because you registered for an CareerIDream account and need to complete your activation process.{% endblocktrans %}</p>
+
+<p>{% trans "Please click the link below to activate your CareerIDream account:" %}</p>
+<p><a href="http://localhost:3000/{{ url|safe }}">Activate your CareerIDream account</a></p>
+
+<p>{% trans "Thank you for choosing CareerIDream!" %}</p>
+
+<p>{% blocktrans %}The CareerIDream Team{% endblocktrans %}</p>
+{% endblock html_body %}

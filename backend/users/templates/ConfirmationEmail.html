@@ -1,0 +1,33 @@
+{% load i18n %}
+
+{# 
+  Subject block for the confirmation email.
+  This will be used as the email subject line.
+#}
+{% block subject %}
+{% blocktrans %}EventsHub - Your account has been successfully created and activated!{% endblocktrans %}
+{% endblock %}
+
+{# 
+  Text body block for plain-text email clients.
+  Informs the user their account is ready and welcomes them to EventsHub.
+#}
+{% block text_body %}
+{% trans "Congratulations! Your EventsHub account has been created and is ready to use." %}
+
+{% trans "Thank you for joining EventsHub, your platform for discovering and managing amazing events!" %}
+
+{% blocktrans %}The EventsHub Team{% endblocktrans %}
+{% endblock text_body %}
+
+{# 
+  HTML body block for rich email clients.
+  Provides a styled confirmation message and a warm welcome.
+#}
+{% block html_body %}
+<p>{% trans "Congratulations! Your EventsHub account has been created and is ready to use." %}</p>
+
+<p>{% trans "Thank you for joining EventsHub, your platform for discovering and managing amazing events!" %}</p>
+
+<p>{% blocktrans %}The EventsHub Team{% endblocktrans %}</p>
+{% endblock html_body %}
