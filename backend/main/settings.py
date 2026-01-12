@@ -20,7 +20,11 @@ DEBUG = getenv('DEBUG', 'True') == 'True'
 
 DEVELOPMENT_MODE = getenv('DEVELOPMENT_MODE', 'False') == 'True'
 
-ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+    if h.strip()
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -118,10 +123,34 @@ if DEVELOPMENT_MODE:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 else:
+    # AWS_S3_ACCESS_KEY_ID = getenv('AWS_S3_ACCESS_KEY_ID')
+    # AWS_S3_SECRET_ACCESS_KEY = getenv('AWS_S3_SECRET_ACCESS_KEY')
+    # AWS_STORAGE_BUCKET_NAME = getenv('AWS_STORAGE_BUCKET_NAME')
+    # AWS_S3_REGION_NAME = getenv('AWS_S3_REGION_NAME')
+    # AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
+    # AWS_S3_OBJECT_PARAMETERS = {
+    #     'CacheControl': 'max-age=86400'
+    # }
+    # AWS_DEFAULT_ACL = 'public-read'
+    # AWS_LOCATION = 'static'
+    # AWS_MEDIA_LOCATION = 'media'
+    # AWS_S3_CUSTOM_DOMAIN = getenv('AWS_S3_CUSTOM_DOMAIN')
+    # STORAGES = {
+    #     'default': {'BACKEND': 'custom_storages.CustomS3Boto3Storage'},
+    #     'staticfiles': {'BACKEND': 'storages.backends.s3boto3.S3StaticStorage'}
+    # }
+
+    # =========== Static Files with Whitenoise ===========
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'mediafiles'
+    STORAGES = {
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',   
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        }
+    }
 
 EMAIL_BACKEND = getenv('EMAIL_BACKEND')
 EMAIL_HOST = getenv('EMAIL_HOST')
