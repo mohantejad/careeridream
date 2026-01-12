@@ -1,5 +1,7 @@
 from os import getenv, path
 from pathlib import Path
+import sys
+import dj_database_url
 from django.core.management.utils import get_random_secret_key
 import dotenv
 
@@ -16,8 +18,9 @@ SECRET_KEY = getenv('DJNAGO_SECRET_KEY', get_random_secret_key())
 
 DEBUG = getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+DEVELOPMENT_MODE = getenv('DEVELOPMENT_MODE', 'False') == 'True'
 
+ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -30,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'djoser',
+    'storages',
     'social_django',
 
     'users',
@@ -65,18 +69,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'main.wsgi.application'
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': getenv('DB_NAME', 'careeridreamlocaldb'),
-        'USER': getenv('DB_USER', 'careeridreamlocaluser'),
-        'PASSWORD': getenv('DB_PASSWORD', 'careeridreamlocalpassword'),
-        'HOST': getenv('DB_HOST', 'localhost'),
-        'PORT': getenv('DB_PORT', '5432'),
+if DEVELOPMENT_MODE is True:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': getenv('DB_NAME', 'careeridreamlocaldb'),
+            'USER': getenv('DB_USER', 'careeridreamlocaluser'),
+            'PASSWORD': getenv('DB_PASSWORD', 'careeridreamlocalpassword'),
+            'HOST': getenv('DB_HOST', 'localhost'),
+            'PORT': getenv('DB_PORT', '5432'),
+        }
     }
-}
-
+elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
+    if getenv('DATABASE_URL', None) is None:
+        raise Exception('DATABASE_URL environment variable not set in production mode')
+    DATABASES = {
+        'default': dj_database_url.parse(getenv('DATABASE_URL'))
+    }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -103,11 +112,16 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if DEVELOPMENT_MODE:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = BASE_DIR / 'static'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
 EMAIL_BACKEND = getenv('EMAIL_BACKEND')
 EMAIL_HOST = getenv('EMAIL_HOST')
