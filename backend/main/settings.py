@@ -1,6 +1,5 @@
 from os import getenv, path
 from pathlib import Path
-import sys
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
 import dotenv
@@ -14,9 +13,9 @@ if path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
 
 
-SECRET_KEY = getenv('DJNAGO_SECRET_KEY', get_random_secret_key())
+SECRET_KEY = getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 
-DEBUG = getenv('DEBUG', 'True') == 'True'
+DEBUG = getenv('DEBUG', 'False') == 'True'
 
 DEVELOPMENT_MODE = getenv('DEVELOPMENT_MODE', 'False') == 'True'
 
@@ -85,11 +84,9 @@ if DEVELOPMENT_MODE is True:
             'PORT': getenv('DB_PORT', '5432'),
         }
     }
-elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
-    if getenv('DATABASE_URL', None) is None:
-        raise Exception('DATABASE_URL environment variable not set in production mode')
+else:
     DATABASES = {
-        'default': dj_database_url.parse(getenv('DATABASE_URL'))
+        'default': dj_database_url.config(default=getenv('DATABASE_URL'))
     }
 
 
@@ -123,23 +120,6 @@ if DEVELOPMENT_MODE:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 else:
-    # AWS_S3_ACCESS_KEY_ID = getenv('AWS_S3_ACCESS_KEY_ID')
-    # AWS_S3_SECRET_ACCESS_KEY = getenv('AWS_S3_SECRET_ACCESS_KEY')
-    # AWS_STORAGE_BUCKET_NAME = getenv('AWS_STORAGE_BUCKET_NAME')
-    # AWS_S3_REGION_NAME = getenv('AWS_S3_REGION_NAME')
-    # AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
-    # AWS_S3_OBJECT_PARAMETERS = {
-    #     'CacheControl': 'max-age=86400'
-    # }
-    # AWS_DEFAULT_ACL = 'public-read'
-    # AWS_LOCATION = 'static'
-    # AWS_MEDIA_LOCATION = 'media'
-    # AWS_S3_CUSTOM_DOMAIN = getenv('AWS_S3_CUSTOM_DOMAIN')
-    # STORAGES = {
-    #     'default': {'BACKEND': 'custom_storages.CustomS3Boto3Storage'},
-    #     'staticfiles': {'BACKEND': 'storages.backends.s3boto3.S3StaticStorage'}
-    # }
-
     # =========== Static Files with Whitenoise ===========
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -178,6 +158,7 @@ REST_FRAMEWORK = {
     ],
 }
 
+REDIRECT_URLS = [u.strip() for u in getenv("REDIRECT_URLS", "").split(",") if u.strip()]
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '/password-reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '/username-reset/confirm/{uid}/{token}',
@@ -203,7 +184,7 @@ DJOSER = {
         'activation': 'users.emails.ActivationEmail',
         'confirmation': 'users.emails.ConfirmationEmail',
     },
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': getenv('REDIRECT_URLS').split(','),
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': REDIRECT_URLS,
 }
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = getenv('GOOGLE_AUTH_KEY')
@@ -217,7 +198,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
 
 AUTH_COOKIE = 'access'
 AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True') == 'True'
-AUTH_COOKIE_SAMESITE = 'None'
+AUTH_COOKIE_SAMESITE = getenv("AUTH_COOKIE_SAMESITE", "None")
 AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 5 
 AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24
 AUTH_COOKIE_HTTP_ONLY = True
@@ -227,10 +208,12 @@ AUTH_USER_MODEL = 'users.UserAccount'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = getenv(
-    'CORS_ALLOWED_ORIGINS', 
-    'http://localhost:3000, http://127.0.0.1:3000'
-).split(',')
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",") if o.strip()
+]
 # CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -243,4 +226,8 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
 ]
