@@ -9,7 +9,13 @@ import { space } from "@/app/fonts";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
-const publicNavLinks = [
+type NavLink = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+const publicNavLinks: NavLink[] = [
   { label: "Product", href: "#product" },
   { label: "Workflow", href: "#workflow" },
   { label: "Templates", href: "#templates" },
@@ -71,7 +77,7 @@ const Header = ({
     }
   };
 
-  const appNavLinks = [
+  const appNavLinks: NavLink[] = [
     { label: "Dashboard", href: "/dashboard" },
     {
       label: "Workflow",
