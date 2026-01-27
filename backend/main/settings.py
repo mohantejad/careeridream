@@ -210,6 +210,17 @@ else:
     AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True') == 'True'
     AUTH_COOKIE_SAMESITE = getenv("AUTH_COOKIE_SAMESITE", "None")
 
+if DEBUG or DEVELOPMENT_MODE:
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_SAMESITE = "Lax"
+else:
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = "None"
+
 AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 5
 AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24
 # Longer refresh window when "remember me" is enabled (30 days).
