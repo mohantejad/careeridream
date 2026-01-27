@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'social_django',
 
     'users',
+    'profiles.apps.ProfilesConfig',
 ]
 
 MIDDLEWARE = [
@@ -194,13 +195,25 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'openid'
 ]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'prompt': 'select_account'
+}
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
 
 AUTH_COOKIE = 'access'
-AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True') == 'True'
-AUTH_COOKIE_SAMESITE = getenv("AUTH_COOKIE_SAMESITE", "None")
-AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 5 
+
+if DEBUG or DEVELOPMENT_MODE:
+    AUTH_COOKIE_SECURE = False
+    AUTH_COOKIE_SAMESITE = 'Lax'
+else:
+    AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True') == 'True'
+    AUTH_COOKIE_SAMESITE = getenv("AUTH_COOKIE_SAMESITE", "None")
+
+AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 5
 AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24
+# Longer refresh window when "remember me" is enabled (30 days).
+AUTH_COOKIE_REFRESH_MAX_AGE_REMEMBER = 60 * 60 * 24 * 30
 AUTH_COOKIE_HTTP_ONLY = True
 AUTH_COOKIE_PATH = '/'
 

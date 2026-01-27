@@ -1,3 +1,5 @@
+"""Auth-related views for JWT and social login."""
+
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,6 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class CustomProviderAuthView(ProviderAuthView):
+    """Set auth cookies after social login."""
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
@@ -36,11 +39,18 @@ class CustomProviderAuthView(ProviderAuthView):
         return response
     
 class CustomTokenObtainPairView(TokenObtainPairView):
+    """Set auth cookies after password login."""
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
             access_token = response.data.get('access')
             refresh_token = response.data.get('refresh')
+            remember_me = str(request.data.get('remember_me', 'false')).lower() == 'true'
+            refresh_max_age = (
+                settings.AUTH_COOKIE_REFRESH_MAX_AGE_REMEMBER
+                if remember_me
+                else settings.AUTH_COOKIE_REFRESH_MAX_AGE
+            )
 
             response.set_cookie(
                 'access',
@@ -54,7 +64,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             response.set_cookie(
                 'refresh',
                 refresh_token,
-                max_age=settings.AUTH_COOKIE_REFRESH_MAX_AGE,
+                max_age=refresh_max_age,
                 secure=settings.AUTH_COOKIE_SECURE,
                 httponly=settings.AUTH_COOKIE_HTTP_ONLY,
                 samesite=settings.AUTH_COOKIE_SAMESITE,
@@ -64,6 +74,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return response
     
 class CustomTokenRefreshView(TokenRefreshView):
+    """Refresh access token via refresh cookie."""
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh')
 
@@ -89,6 +100,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         return response
     
 class CustomTokenVerifyView(TokenVerifyView):
+    """Verify access token from cookie."""
     def post(self, request, *args, **kwargs):
         access_token = request.COOKIES.get('access')
 
@@ -98,6 +110,7 @@ class CustomTokenVerifyView(TokenVerifyView):
         return super().post(request, *args, **kwargs)
     
 class LogoutView(APIView):
+    """Clear auth cookies."""
     def post(self, request, *args, **kwargs):
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie('access')

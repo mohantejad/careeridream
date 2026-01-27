@@ -1,3 +1,5 @@
+"""Auth routes for JWT and social login helpers."""
+
 from .views import CustomTokenObtainPairView, CustomTokenRefreshView, CustomTokenVerifyView, LogoutView, CustomProviderAuthView
 from django.urls import path, re_path
 
