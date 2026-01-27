@@ -177,7 +177,6 @@ const ResetPasswordConfirmPage = () => {
                     {...register("re_new_password", {
                       required: "Please confirm your new password.",
                       validate: (value) =>
-                        // eslint-disable-next-line react-hooks/incompatible-library
                         value === watch("new_password") ||
                         "Passwords do not match.",
                     })}

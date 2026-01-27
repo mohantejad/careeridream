@@ -15,19 +15,21 @@ const ActivationPage = () => {
   const params = useParams();
   const uid = Array.isArray(params.uid) ? params.uid[0] : params.uid;
   const token = Array.isArray(params.token) ? params.token[0] : params.token;
+  const missingParams = !uid || !token;
   const [status, setStatus] = useState<{
     type: "loading" | "error" | "success";
     message: string;
-  }>({ type: "loading", message: "Activating your account..." });
+  }>(() =>
+    missingParams
+      ? {
+          type: "error",
+          message: "Activation link is invalid or incomplete.",
+        }
+      : { type: "loading", message: "Activating your account..." }
+  );
 
   useEffect(() => {
-    if (!uid || !token) {
-      setStatus({
-        type: "error",
-        message: "Activation link is invalid or incomplete.",
-      });
-      return;
-    }
+    if (missingParams) return;
 
     const activate = async () => {
       try {
@@ -65,7 +67,7 @@ const ActivationPage = () => {
     };
 
     void activate();
-  }, [router, token, uid]);
+  }, [missingParams, router, token, uid]);
 
   return (
     <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>

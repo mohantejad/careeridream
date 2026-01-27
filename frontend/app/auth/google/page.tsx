@@ -10,6 +10,8 @@ import Footer from '@/components/Footer';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
 
+export const dynamic = 'force-dynamic';
+
 const GoogleAuthPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
