@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0c1116;
+  --surface: #0f1720;
+  --mint: #6de5c1;
+  --aqua: #46c2ff;
+  --coral: #ff7a6b;
+  --sun: #f7d469;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.hero-grid {
+  background-image:
+    radial-gradient(600px 400px at 15% 20%, rgba(109, 229, 193, 0.18), transparent 60%),
+    radial-gradient(700px 500px at 85% 15%, rgba(70, 194, 255, 0.16), transparent 60%),
+    radial-gradient(500px 500px at 80% 80%, rgba(255, 122, 107, 0.18), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.scanlines {
+  background-image: linear-gradient(
+    transparent 95%,
+    rgba(255, 255, 255, 0.03) 95%
+  );
+  background-size: 100% 24px;
+}
+
+.glow-ring {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 40px rgba(109, 229, 193, 0.25),
+    0 0 90px rgba(70, 194, 255, 0.22);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: reveal 0.8s ease forwards;
+}
+
+.reveal.delay-1 {
+  animation-delay: 0.1s;
+}
+
+.reveal.delay-2 {
+  animation-delay: 0.2s;
+}
+
+.reveal.delay-3 {
+  animation-delay: 0.3s;
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes floatUp {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: floatUp 6s ease-in-out infinite;
+}
+
+.nav-underline {
+  position: relative;
+  display: inline-flex;
+  padding-bottom: 2px;
+  overflow: hidden;
+}
+
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(109, 229, 193, 0.9), rgba(70, 194, 255, 0.9));
+  opacity: 0;
+  transform: translateX(-120%);
+  transition: transform 0.4s ease, opacity 0.3s ease;
+}
+
+.nav-underline:hover::after {
+  opacity: 1;
+  transform: translateX(0);
 }
