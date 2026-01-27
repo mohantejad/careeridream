@@ -7,6 +7,7 @@ import { sora, space } from "@/app/fonts";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { apiFetch, getApiBaseUrl } from "@/lib/api";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 type CurrentUser = {
   email: string;
@@ -397,26 +398,27 @@ const OnboardingPage = () => {
   }
 
   return (
-    <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>
-      <main className="relative overflow-hidden">
-        <div className="hero-grid absolute inset-0" />
-        <div className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#102b2a] blur-3xl" />
-        <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-[#18253b] blur-3xl" />
-        <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-8">
-          <Header showNavLinks={false} showAuthButtons={false} showProfileMenu userInitials={initials} />
-          <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">
-              Onboarding
-            </p>
-            <h1 className={`${space.className} mt-2 text-3xl`}>
-              Complete your profile
-            </h1>
-            <p className="mt-2 text-sm text-white/70">
-              Upload your resume to auto-fill details, then review and edit.
-            </p>
-          </section>
+    <ProtectedRoute>
+      <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>
+        <main className="relative overflow-hidden">
+          <div className="hero-grid absolute inset-0" />
+          <div className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#102b2a] blur-3xl" />
+          <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-[#18253b] blur-3xl" />
+          <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-8">
+            <Header showNavLinks={false} showAuthButtons={false} showProfileMenu userInitials={initials} />
+            <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50">
+                Onboarding
+              </p>
+              <h1 className={`${space.className} mt-2 text-3xl`}>
+                Complete your profile
+              </h1>
+              <p className="mt-2 text-sm text-white/70">
+                Upload your resume to auto-fill details, then review and edit.
+              </p>
+            </section>
 
-          <section className="mt-10 space-y-10">
+            <section className="mt-10 space-y-10">
             <div className="rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6">
               <h2 className={`${space.className} text-2xl`}>Basics & Resume</h2>
               <div className="mt-6 space-y-6">
@@ -1087,11 +1089,12 @@ const OnboardingPage = () => {
                 <p className="text-xs text-white/60">{statusMessage}</p>
               ) : null}
             </div>
-          </section>
-        </div>
-        <Footer variant="minimal" />
-      </main>
-    </div>
+            </section>
+          </div>
+          <Footer variant="minimal" />
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 };
 
