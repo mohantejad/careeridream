@@ -61,8 +61,11 @@ class ResendEmailBackend(BaseEmailBackend):
         sent_count = 0
         for message in email_messages:
             payload = self._build_payload(message)
-            resend.Emails.send(payload)
-            sent_count += 1
+            try:
+                resend.Emails.send(payload)
+                sent_count += 1
+            except Exception as exc:
+                # Raise the Resend error so Render logs show the real cause.
+                raise RuntimeError(f"Resend send failed: {exc}") from exc
 
         return sent_count
-
