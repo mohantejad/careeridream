@@ -66,11 +66,16 @@ const SignupPage = () => {
       });
 
       if (!response.ok) {
-        const errorData = (await response.json()) as Record<string, string[]>;
-        const fallback = 'Unable to create your account. Please try again.';
-        const firstError =
-          Object.values(errorData)[0]?.[0] ?? fallback;
-        setStatus({ type: 'error', message: firstError });
+        const errorText = await response.text();
+        let message = 'Unable to create your account. Please try again.';
+        try {
+          const errorData = JSON.parse(errorText) as Record<string, string[]>;
+          message = Object.values(errorData)[0]?.[0] ?? message;
+        } catch {
+          if (errorText) message = errorText;
+        }
+        console.error('Signup error:', response.status, errorText);
+        setStatus({ type: 'error', message });
         return;
       }
 
