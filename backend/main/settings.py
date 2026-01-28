@@ -136,7 +136,8 @@ else:
 EMAIL_API_KEY = getenv('EMAIL_API_KEY')
 
 EMAIL_BACKEND = getenv('EMAIL_BACKEND')
-if EMAIL_API_KEY and not EMAIL_BACKEND:
+# Prefer Resend HTTP backend whenever EMAIL_API_KEY is present.
+if EMAIL_API_KEY:
     EMAIL_BACKEND = 'users.email_backends.ResendEmailBackend'
 EMAIL_HOST = getenv('EMAIL_HOST')
 EMAIL_PORT = getenv('EMAIL_PORT')
