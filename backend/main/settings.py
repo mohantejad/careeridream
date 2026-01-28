@@ -237,6 +237,21 @@ AUTH_USER_MODEL = 'users.UserAccount'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
+
 CORS_ALLOWED_ORIGINS = [
     o.strip() for o in getenv(
         "CORS_ALLOWED_ORIGINS",
