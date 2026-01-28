@@ -19,6 +19,8 @@ const GOOGLE_OAUTH_URL =
     GOOGLE_REDIRECT_URI
   )}`;
 
+  console.log('hi')
+
 type LoginFormData = {
   email: string;
   password: string;
