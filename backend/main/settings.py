@@ -238,7 +238,9 @@ CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000,http://127.0.0.1:3000",
     ).split(",") if o.strip()
 ]
-# CORS_ALLOW_ALL_ORIGINS = True
+# Do not rely on env var regex strings; keep this explicit in settings.
+# Add exact production origins via CORS_ALLOWED_ORIGINS env instead.
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
