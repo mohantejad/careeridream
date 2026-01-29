@@ -6,17 +6,26 @@ const buildUrl = (input: string) =>
 
 export const getApiBaseUrl = () => API_BASE_URL;
 
+const withTimeout = (timeoutMs = 10000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return { controller, timeoutId };
+};
+
 export const refreshAccessToken = async (): Promise<boolean> => {
+  const { controller, timeoutId } = withTimeout();
   const response = await fetch(buildUrl("/auth/jwt/refresh/"), {
     method: "POST",
     credentials: "include",
-  });
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeoutId));
   return response.ok;
 };
 
 export const apiFetch = async (
   input: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
+  timeoutMs = 10000
 ): Promise<Response> => {
   const requestInit: RequestInit = {
     credentials: "include",
@@ -24,7 +33,11 @@ export const apiFetch = async (
   };
   const url = buildUrl(input);
 
-  let response = await fetch(url, requestInit);
+  const { controller, timeoutId } = withTimeout(timeoutMs);
+  let response = await fetch(url, {
+    ...requestInit,
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeoutId));
   if (response.status !== 401) {
     return response;
   }
@@ -37,4 +50,3 @@ export const apiFetch = async (
   response = await fetch(url, requestInit);
   return response;
 };
-
