@@ -147,7 +147,7 @@ EMAIL_HOST_PASSWORD = getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = getenv('DEFAULT_FROM_EMAIL')
 EMAIL_TIMEOUT = 10
 
-DOMAIN = getenv('DOMAIN')
+DOMAIN = getenv('DOMAIN', 'localhost:3000')
 SITE_NAME = 'CareerIDream'
 
 AUTHENTICATION_BACKENDS = (
@@ -169,13 +169,13 @@ REDIRECT_URLS = [u.strip() for u in getenv("REDIRECT_URLS", "").split(",") if u.
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '/password-reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '/username-reset/confirm/{uid}/{token}',
-    'EMAIL_FRONTEND_DOMAIN': 'localhost:3000',
+    'EMAIL_FRONTEND_DOMAIN': getenv('EMAIL_FRONTEND_DOMAIN', DOMAIN),
     'EMAIL_FRONTEND_SITE_NAME': 'CareerIDream',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
-    'ACTIVATION_URL': '/users/activation/{uid}/{token}',
+    'ACTIVATION_URL': getenv('ACTIVATION_URL', '/users/activation/{uid}/{token}'),
     'USER_CREATE_PASSWORD_RETYPE': True,
     'SET_PASSWORD_RETYPE': True,
     'SET_USERNAME_RETYPE': True,
