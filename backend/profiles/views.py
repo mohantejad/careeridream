@@ -1,7 +1,7 @@
 '''Profile APIs for managing user profile data and related collections.'''
 
-import base64
 import json
+from io import BytesIO
 from os import getenv
 
 from django.db import transaction
@@ -28,6 +28,19 @@ from .serializers import (
     UserProfileDetailSerializer,
     UserProfileSerializer,
 )
+
+
+GROQ_API_KEY = getenv('GROQ_API_KEY')
+GROQ_MODEL = getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+
+def strip_code_fences(text: str) -> str:
+    text = text.strip()
+    if text.startswith("```"):
+        # remove first line (``` or ```json)
+        text = text.split("\n", 1)[1] if "\n" in text else ""
+    if text.endswith("```"):
+        text = text.rsplit("```", 1)[0]
+    return text.strip()
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -183,8 +196,8 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         if not resume_file:
             return Response({'detail': 'resume_file is required.'}, status=400)
 
-        api_key = GEMINI_API_KEY
-        model = GEMINI_MODEL
+        api_key = GROQ_API_KEY
+        model = GROQ_MODEL
         allowed_mime_types = {
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -192,7 +205,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
         if not api_key:
             return Response(
-                {'detail': 'GEMINI_API_KEY is not configured.'},
+                {'detail': 'GROQ_API_KEY is not configured.'},
                 status=status.HTTP_501_NOT_IMPLEMENTED,
             )
 
@@ -207,7 +220,41 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                 status=400,
             )
 
-        prompt_template = (
+        # Extract plain text from the resume before sending to the LLM.
+        resume_text = ''
+        file_bytes = resume_file.read()
+        file_stream = BytesIO(file_bytes)
+        try:
+            if resume_file.content_type == 'application/pdf':
+                from pypdf import PdfReader
+                reader = PdfReader(file_stream)
+                resume_text = '\n'.join(
+                    page.extract_text() or '' for page in reader.pages
+                ).strip()
+            else:
+                from docx import Document
+                doc = Document(file_stream)
+                resume_text = '\n'.join(
+                    para.text for para in doc.paragraphs if para.text
+                ).strip()
+        except Exception as exc:
+            return Response(
+                {'detail': f'Unable to read resume file: {exc}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not resume_text:
+            return Response(
+                {'detail': 'Resume text could not be extracted.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Limit prompt size to avoid oversized requests.
+        max_chars = 12000
+        if len(resume_text) > max_chars:
+            resume_text = resume_text[:max_chars]
+
+        system_prompt = (
             'You are a resume parser. Extract structured data from the resume.\n'
             'Return STRICT JSON only (no markdown). Keys:\n'
             'profile, skills, experiences, educations, certifications, achievements.\n'
@@ -221,53 +268,38 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             'If a field is missing, use empty string, null, or empty list.'
         )
 
-        mime_type = resume_file.content_type or 'application/pdf'
-        file_bytes = resume_file.read()
-        file_b64 = base64.b64encode(file_bytes).decode('utf-8')
-
         request_payload = {
-            'contents': [
-                {
-                    'parts': [
-                        {
-                            'inline_data': {
-                                'mime_type': mime_type,
-                                'data': file_b64,
-                            }
-                        },
-                        {'text': prompt_template},
-                    ]
-                }
+            'model': model,
+            'temperature': 0.2,
+            'messages': [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': resume_text},
             ],
-            'generationConfig': {
-                'temperature': 0.2,
-                'response_mime_type': 'application/json',
-            },
         }
 
         try:
             import requests
 
-            # Call Gemini API to parse resume content into structured JSON.
+            # Call Groq API to parse resume content into structured JSON.
             response = requests.post(
-                f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
+                'https://api.groq.com/openai/v1/chat/completions',
                 headers={
                     'Content-Type': 'application/json',
-                    'x-goog-api-key': api_key,
+                    'Authorization': f'Bearer {api_key}',
                 },
                 json=request_payload,
                 timeout=60,
             )
         except Exception as exc:
             return Response(
-                {'detail': f'Gemini request failed: {exc}'},
+                {'detail': f'Groq request failed: {exc}'},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
         if response.status_code >= 400:
             return Response(
                 {
-                    'detail': 'Gemini API error.',
+                    'detail': 'Groq API error.',
                     'status_code': response.status_code,
                 },
                 status=status.HTTP_502_BAD_GATEWAY,
@@ -275,14 +307,14 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
         data = response.json()
         text = (
-            data.get('candidates', [{}])[0]
-            .get('content', {})
-            .get('parts', [{}])[0]
-            .get('text', '')
+            data.get('choices', [{}])[0]
+            .get('message', {})
+            .get('content', '')
         )
 
         try:
-            parsed = json.loads(text)
+            clean = strip_code_fences(text)
+            parsed = json.loads(clean)
         except json.JSONDecodeError:
             return Response(
                 {
@@ -293,10 +325,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             )
 
         return Response(parsed, status=status.HTTP_200_OK)
-
-
-GEMINI_API_KEY = getenv('GEMINI_API_KEY')
-GEMINI_MODEL = getenv('GEMINI_MODEL', 'gemini-2.0-flash')
 
 
 class ProfileRelatedViewSet(viewsets.ModelViewSet):

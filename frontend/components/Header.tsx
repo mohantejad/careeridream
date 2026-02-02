@@ -71,6 +71,7 @@ const Header = ({
     try {
       // Clear auth cookies on the backend.
       await apiFetch('/auth/logout/', { method: 'POST' });
+      router.push('/')
     } finally {
       window.location.href = '/';
     }

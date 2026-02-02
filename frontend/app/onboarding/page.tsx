@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { sora, space } from "@/app/fonts";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { apiFetch, getApiBaseUrl } from "@/lib/api";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { sora, space } from '@/app/fonts';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { apiFetch, getApiBaseUrl } from '@/lib/api';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 type CurrentUser = {
   email: string;
@@ -58,37 +58,37 @@ type Achievement = {
   order: number;
 };
 
-const emptySkill: Skill = { name: "", proficiency: "", order: 0 };
+const emptySkill: Skill = { name: '', proficiency: '', order: 0 };
 const emptyExperience: Experience = {
-  company: "",
-  title: "",
-  location: "",
-  start_date: "",
+  company: '',
+  title: '',
+  location: '',
+  start_date: '',
   end_date: null,
   is_current: false,
-  description: "",
+  description: '',
   order: 0,
 };
 const emptyEducation: Education = {
-  school: "",
-  degree: "",
-  field_of_study: "",
+  school: '',
+  degree: '',
+  field_of_study: '',
   start_date: null,
   end_date: null,
-  description: "",
+  description: '',
   order: 0,
 };
 const emptyCertification: Certification = {
-  name: "",
-  issuer: "",
+  name: '',
+  issuer: '',
   issue_date: null,
   expiration_date: null,
-  credential_url: "",
+  credential_url: '',
   order: 0,
 };
 const emptyAchievement: Achievement = {
-  title: "",
-  description: "",
+  title: '',
+  description: '',
   date: null,
   order: 0,
 };
@@ -97,16 +97,16 @@ const OnboardingPage = () => {
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [currentResumeUrl, setCurrentResumeUrl] = useState<string | null>(null);
   const [isParsing, setIsParsing] = useState(false);
 
   const [profileDraft, setProfileDraft] = useState({
-    headline: "",
-    summary: "",
-    location: "",
-    phone: "",
+    headline: '',
+    summary: '',
+    location: '',
+    phone: '',
   });
 
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -144,15 +144,15 @@ const OnboardingPage = () => {
   >(null);
 
   const initials = useMemo(() => {
-    if (!user) return "U";
-    const name = `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim();
-    if (!name) return user.email[0]?.toUpperCase() ?? "U";
+    if (!user) return 'U';
+    const name = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+    if (!name) return user.email[0]?.toUpperCase() ?? 'U';
     return name
-      .split(" ")
+      .split(' ')
       .filter(Boolean)
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase())
-      .join("");
+      .join('');
   }, [user]);
 
   useEffect(() => {
@@ -161,8 +161,8 @@ const OnboardingPage = () => {
       setIsLoading(true);
       try {
         const [userRes, profileRes] = await Promise.all([
-          apiFetch("/auth/users/me/"),
-          apiFetch("/profiles/profile/me/"),
+          apiFetch('/auth/users/me/'),
+          apiFetch('/profiles/profile/me/'),
         ]);
 
         if (!isMounted) return;
@@ -186,10 +186,10 @@ const OnboardingPage = () => {
             achievements?: Achievement[];
           };
           setProfileDraft({
-            headline: profileData.headline ?? "",
-            summary: profileData.summary ?? "",
-            location: profileData.location ?? "",
-            phone: profileData.phone ?? "",
+            headline: profileData.headline ?? '',
+            summary: profileData.summary ?? '',
+            location: profileData.location ?? '',
+            phone: profileData.phone ?? '',
           });
           setSkills(profileData.skills ?? []);
           setExperiences(profileData.experiences ?? []);
@@ -197,7 +197,7 @@ const OnboardingPage = () => {
           setCertifications(profileData.certifications ?? []);
           setAchievements(profileData.achievements ?? []);
           if (profileData.resume_file) {
-            const url = profileData.resume_file.startsWith("http")
+            const url = profileData.resume_file.startsWith('http')
               ? profileData.resume_file
               : `${getApiBaseUrl()}${profileData.resume_file}`;
             setCurrentResumeUrl(url);
@@ -312,15 +312,15 @@ const OnboardingPage = () => {
   const parseResume = async () => {
     if (!resumeFile || isParsing) return;
     setIsParsing(true);
-    setStatusMessage("");
+    setStatusMessage('');
     const formData = new FormData();
-    formData.append("resume_file", resumeFile);
+    formData.append('resume_file', resumeFile);
 
     try {
       const response = await apiFetch(
-        "/profiles/profile/parse_resume/",
+        '/profiles/profile/parse_resume/',
         {
-          method: "POST",
+          method: 'POST',
           body: formData,
         }
       );
@@ -328,7 +328,7 @@ const OnboardingPage = () => {
       if (!response.ok) {
         const errorText = await response.text();
         setStatusMessage(
-          errorText || "Unable to parse resume. Please try again."
+          errorText || 'Unable to parse resume. Please try again.'
         );
         return;
       }
@@ -342,50 +342,50 @@ const OnboardingPage = () => {
         achievements?: Achievement[];
       };
       applyParsedData(data);
-      setStatusMessage("Resume parsed. Review and edit the details below.");
+      setStatusMessage('Resume parsed. Review and edit the details below.');
     } catch {
-      setStatusMessage("Unable to parse resume. Please try again.");
+      setStatusMessage('Unable to parse resume. Please try again.');
     } finally {
       setIsParsing(false);
     }
   };
 
   const submitOnboarding = async () => {
-    setStatusMessage("");
+    setStatusMessage('');
     const formData = new FormData();
-    formData.append("profile", JSON.stringify(profileDraft));
-    formData.append("skills", JSON.stringify(skills));
-    formData.append("experiences", JSON.stringify(experiences));
-    formData.append("educations", JSON.stringify(educations));
-    formData.append("certifications", JSON.stringify(certifications));
-    formData.append("achievements", JSON.stringify(achievements));
+    formData.append('profile', JSON.stringify(profileDraft));
+    formData.append('skills', JSON.stringify(skills));
+    formData.append('experiences', JSON.stringify(experiences));
+    formData.append('educations', JSON.stringify(educations));
+    formData.append('certifications', JSON.stringify(certifications));
+    formData.append('achievements', JSON.stringify(achievements));
     if (resumeFile) {
-      formData.append("resume_file", resumeFile);
+      formData.append('resume_file', resumeFile);
     }
 
     const response = await apiFetch(
-      "/profiles/profile/onboarding_submit/",
+      '/profiles/profile/onboarding_submit/',
       {
-        method: "POST",
+        method: 'POST',
         body: formData,
       }
     );
 
     if (response.ok) {
-      setStatusMessage("Onboarding completed! Redirecting...");
-      setTimeout(() => router.replace("/"), 1200);
+      setStatusMessage('Onboarding completed! Redirecting...');
+      setTimeout(() => router.replace('/'), 1200);
     } else {
-      setStatusMessage("Unable to complete onboarding. Please try again.");
+      setStatusMessage('Unable to complete onboarding. Please try again.');
     }
   };
 
   if (isLoading) {
     return (
       <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>
-        <main className="relative overflow-hidden">
-          <div className="hero-grid absolute inset-0" />
-          <div className="relative mx-auto flex min-h-[70vh] max-w-6xl flex-col items-center justify-center px-6 pb-16 pt-8 text-center">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">
+        <main className='relative overflow-hidden'>
+          <div className='hero-grid absolute inset-0' />
+          <div className='relative mx-auto flex min-h-[70vh] max-w-6xl flex-col items-center justify-center px-6 pb-16 pt-8 text-center'>
+            <p className='text-xs uppercase tracking-[0.3em] text-white/50'>
               Loading
             </p>
             <h1 className={`${space.className} mt-3 text-3xl`}>
@@ -400,32 +400,32 @@ const OnboardingPage = () => {
   return (
     <ProtectedRoute>
       <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>
-        <main className="relative overflow-hidden">
-          <div className="hero-grid absolute inset-0" />
-          <div className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#102b2a] blur-3xl" />
-          <div className="absolute right-10 top-20 h-72 w-72 rounded-full bg-[#18253b] blur-3xl" />
-          <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-8">
+        <main className='relative overflow-hidden'>
+          <div className='hero-grid absolute inset-0' />
+          <div className='absolute -left-32 top-10 h-80 w-80 rounded-full bg-[#102b2a] blur-3xl' />
+          <div className='absolute right-10 top-20 h-72 w-72 rounded-full bg-[#18253b] blur-3xl' />
+          <div className='relative mx-auto max-w-6xl px-6 pb-16 pt-8'>
             <Header showNavLinks={false} showAuthButtons={false} showProfileMenu userInitials={initials} />
-            <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">
+            <section className='mt-10 rounded-3xl border border-white/10 bg-white/5 p-6'>
+              <p className='text-xs uppercase tracking-[0.3em] text-white/50'>
                 Onboarding
               </p>
               <h1 className={`${space.className} mt-2 text-3xl`}>
                 Complete your profile
               </h1>
-              <p className="mt-2 text-sm text-white/70">
+              <p className='mt-2 text-sm text-white/70'>
                 Upload your resume to auto-fill details, then review and edit.
               </p>
             </section>
 
-            <section className="mt-10 space-y-10">
-            <div className="rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6">
+            <section className='mt-10 space-y-10'>
+            <div className='rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6'>
               <h2 className={`${space.className} text-2xl`}>Basics & Resume</h2>
-              <div className="mt-6 space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
+              <div className='mt-6 space-y-6'>
+                <div className='grid gap-4 md:grid-cols-2'>
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm"
-                    placeholder="Headline"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm'
+                    placeholder='Headline'
                     value={profileDraft.headline}
                     onChange={(event) =>
                       setProfileDraft((prev) => ({
@@ -435,8 +435,8 @@ const OnboardingPage = () => {
                     }
                   />
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm"
-                    placeholder="Location"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm'
+                    placeholder='Location'
                     value={profileDraft.location}
                     onChange={(event) =>
                       setProfileDraft((prev) => ({
@@ -447,8 +447,8 @@ const OnboardingPage = () => {
                   />
                 </div>
                 <textarea
-                  className="flex min-h-30 w-full rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm"
-                  placeholder="Summary"
+                  className='flex min-h-30 w-full rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm'
+                  placeholder='Summary'
                   value={profileDraft.summary}
                   onChange={(event) =>
                     setProfileDraft((prev) => ({
@@ -458,8 +458,8 @@ const OnboardingPage = () => {
                   }
                 />
                 <input
-                  className="w-1/2 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm"
-                  placeholder="Phone"
+                  className='w-1/2 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-3 text-sm'
+                  placeholder='Phone'
                   value={profileDraft.phone}
                   onChange={(event) =>
                     setProfileDraft((prev) => ({
@@ -468,47 +468,47 @@ const OnboardingPage = () => {
                     }))
                   }
                 />
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs text-white/50">Resume</p>
+                <div className='rounded-2xl border border-white/10 bg-white/5 p-4'>
+                  <p className='text-xs text-white/50'>Resume</p>
                   {currentResumeUrl ? (
                     <a
-                      className="text-xs text-[#6de5c1] hover:text-[#a8f0d8]"
+                      className='text-xs text-[#6de5c1] hover:text-[#a8f0d8]'
                       href={currentResumeUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                      target='_blank'
+                      rel='noreferrer'
                     >
                       View current resume
                     </a>
                   ) : (
-                    <p className="text-xs text-white/50">No resume uploaded.</p>
+                    <p className='text-xs text-white/50'>No resume uploaded.</p>
                   )}
                   <input
-                    className="mt-3 w-full text-xs text-white/60 file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-xs file:text-white/80"
-                    type="file"
+                    className='mt-3 w-full text-xs text-white/60 file:mr-4 file:rounded-full file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-xs file:text-white/80'
+                    type='file'
                     onChange={(event) =>
                       setResumeFile(event.target.files?.[0] ?? null)
                     }
                   />
-                  <div className="mt-4 flex flex-wrap gap-3">
+                  <div className='mt-4 flex flex-wrap gap-3'>
                     <button
-                      className="rounded-full bg-[#6de5c1] px-5 py-2 text-xs font-semibold text-[#0c1116] disabled:opacity-60"
+                      className='rounded-full bg-[#6de5c1] px-5 py-2 text-xs font-semibold text-[#0c1116] disabled:opacity-60'
                       onClick={parseResume}
                       disabled={!resumeFile || isParsing}
                     >
-                      {isParsing ? "Parsing..." : "Parse resume"}
+                      {isParsing ? 'Parsing...' : 'Parse resume'}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6">
+            <div className='rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6'>
               <h2 className={`${space.className} text-2xl`}>Skills</h2>
-              <div className="mt-6 space-y-6">
-                <div className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+              <div className='mt-6 space-y-6'>
+                <div className='grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]'>
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    placeholder="Skill name"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    placeholder='Skill name'
                     value={skillDraft.name}
                     onChange={(event) =>
                       setSkillDraft((prev) => ({
@@ -518,7 +518,7 @@ const OnboardingPage = () => {
                     }
                   />
                   <select
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
                     value={skillDraft.proficiency}
                     onChange={(event) =>
                       setSkillDraft((prev) => ({
@@ -527,16 +527,16 @@ const OnboardingPage = () => {
                       }))
                     }
                   >
-                    <option value="">Level</option>
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                    <option value="expert">Expert</option>
+                    <option value=''>Level</option>
+                    <option value='beginner'>Beginner</option>
+                    <option value='intermediate'>Intermediate</option>
+                    <option value='advanced'>Advanced</option>
+                    <option value='expert'>Expert</option>
                   </select>
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    type="number"
-                    placeholder="Order"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    type='number'
+                    placeholder='Order'
                     value={skillDraft.order}
                     onChange={(event) =>
                       setSkillDraft((prev) => ({
@@ -546,27 +546,27 @@ const OnboardingPage = () => {
                     }
                   />
                   <button
-                    className="rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]"
+                    className='rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]'
                     onClick={saveSkill}
                   >
-                    {editingSkillIndex === null ? "Add" : "Update"}
+                    {editingSkillIndex === null ? 'Add' : 'Update'}
                   </button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className='grid gap-3 md:grid-cols-2'>
                   {skills.map((skill, index) => (
                     <div
                       key={`${skill.name}-${index}`}
-                      className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                      className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm'
                     >
                       <div>
-                        <p className="text-white">{skill.name}</p>
-                        <p className="text-xs text-white/50">
-                          {skill.proficiency || "Unspecified"}
+                        <p className='text-white'>{skill.name}</p>
+                        <p className='text-xs text-white/50'>
+                          {skill.proficiency || 'Unspecified'}
                         </p>
                       </div>
-                      <div className="flex gap-2 text-xs">
+                      <div className='flex gap-2 text-xs'>
                         <button
-                          className="text-white/70"
+                          className='text-white/70'
                           onClick={() => {
                             setEditingSkillIndex(index);
                             setSkillDraft(skill);
@@ -575,7 +575,7 @@ const OnboardingPage = () => {
                           Edit
                         </button>
                         <button
-                          className="text-[#ffb0a8]"
+                          className='text-[#ffb0a8]'
                           onClick={() =>
                             setSkills((prev) => prev.filter((_, i) => i !== index))
                           }
@@ -589,13 +589,13 @@ const OnboardingPage = () => {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6">
+            <div className='rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6'>
               <h2 className={`${space.className} text-2xl`}>Experience</h2>
-              <div className="mt-6 space-y-6">
-                <div className="grid gap-3 md:grid-cols-2">
+              <div className='mt-6 space-y-6'>
+                <div className='grid gap-3 md:grid-cols-2'>
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    placeholder="Company"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    placeholder='Company'
                     value={experienceDraft.company}
                     onChange={(event) =>
                       setExperienceDraft((prev) => ({
@@ -605,8 +605,8 @@ const OnboardingPage = () => {
                     }
                   />
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    placeholder="Title"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    placeholder='Title'
                     value={experienceDraft.title}
                     onChange={(event) =>
                       setExperienceDraft((prev) => ({
@@ -616,8 +616,8 @@ const OnboardingPage = () => {
                     }
                   />
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    placeholder="Location"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    placeholder='Location'
                     value={experienceDraft.location}
                     onChange={(event) =>
                       setExperienceDraft((prev) => ({
@@ -627,8 +627,8 @@ const OnboardingPage = () => {
                     }
                   />
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    type="date"
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    type='date'
                     value={experienceDraft.start_date}
                     onChange={(event) =>
                       setExperienceDraft((prev) => ({
@@ -638,9 +638,9 @@ const OnboardingPage = () => {
                     }
                   />
                   <input
-                    className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                    type="date"
-                    value={experienceDraft.end_date ?? ""}
+                    className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                    type='date'
+                    value={experienceDraft.end_date ?? ''}
                     onChange={(event) =>
                       setExperienceDraft((prev) => ({
                         ...prev,
@@ -649,9 +649,9 @@ const OnboardingPage = () => {
                     }
                     disabled={experienceDraft.is_current}
                   />
-                  <label className="flex items-center gap-2 text-xs text-white/60">
+                  <label className='flex items-center gap-2 text-xs text-white/60'>
                     <input
-                      type="checkbox"
+                      type='checkbox'
                       checked={experienceDraft.is_current}
                       onChange={(event) =>
                         setExperienceDraft((prev) => ({
@@ -663,8 +663,8 @@ const OnboardingPage = () => {
                     Current role
                   </label>
                   <textarea
-                    className="min-h-22.5 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2"
-                    placeholder="Description"
+                    className='min-h-22.5 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2'
+                    placeholder='Description'
                     value={experienceDraft.description}
                     onChange={(event) =>
                       setExperienceDraft((prev) => ({
@@ -673,11 +673,11 @@ const OnboardingPage = () => {
                       }))
                     }
                   />
-                  <div className="flex items-center gap-3 md:col-span-2">
+                  <div className='flex items-center gap-3 md:col-span-2'>
                     <input
-                      className="w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      type="number"
-                      placeholder="Order"
+                      className='w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      type='number'
+                      placeholder='Order'
                       value={experienceDraft.order}
                       onChange={(event) =>
                         setExperienceDraft((prev) => ({
@@ -687,28 +687,28 @@ const OnboardingPage = () => {
                       }
                     />
                     <button
-                      className="rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]"
+                      className='rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]'
                       onClick={saveExperience}
                     >
-                      {editingExperienceIndex === null ? "Add" : "Update"}
+                      {editingExperienceIndex === null ? 'Add' : 'Update'}
                     </button>
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className='space-y-3'>
                   {experiences.map((exp, index) => (
                     <div
                       key={`${exp.company}-${index}`}
-                      className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                      className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm'
                     >
                       <div>
-                        <p className="text-white">{exp.title}</p>
-                        <p className="text-xs text-white/50">
-                          {exp.company} · {exp.location || "Remote"}
+                        <p className='text-white'>{exp.title}</p>
+                        <p className='text-xs text-white/50'>
+                          {exp.company} · {exp.location || 'Remote'}
                         </p>
                       </div>
-                      <div className="flex gap-2 text-xs">
+                      <div className='flex gap-2 text-xs'>
                         <button
-                          className="text-white/70"
+                          className='text-white/70'
                           onClick={() => {
                             setEditingExperienceIndex(index);
                             setExperienceDraft(exp);
@@ -717,7 +717,7 @@ const OnboardingPage = () => {
                           Edit
                         </button>
                         <button
-                          className="text-[#ffb0a8]"
+                          className='text-[#ffb0a8]'
                           onClick={() =>
                             setExperiences((prev) =>
                               prev.filter((_, i) => i !== index)
@@ -733,14 +733,14 @@ const OnboardingPage = () => {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6">
-              <div className="space-y-8">
+            <div className='rounded-3xl border border-white/10 bg-[#0f1720]/85 p-6'>
+              <div className='space-y-8'>
                 <div>
                   <h3 className={`${space.className} text-xl`}>Education</h3>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className='mt-3 grid gap-3 md:grid-cols-2'>
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      placeholder="School"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      placeholder='School'
                       value={educationDraft.school}
                       onChange={(event) =>
                         setEducationDraft((prev) => ({
@@ -750,8 +750,8 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      placeholder="Degree"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      placeholder='Degree'
                       value={educationDraft.degree}
                       onChange={(event) =>
                         setEducationDraft((prev) => ({
@@ -761,8 +761,8 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      placeholder="Field of study"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      placeholder='Field of study'
                       value={educationDraft.field_of_study}
                       onChange={(event) =>
                         setEducationDraft((prev) => ({
@@ -772,9 +772,9 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      type="date"
-                      value={educationDraft.start_date ?? ""}
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      type='date'
+                      value={educationDraft.start_date ?? ''}
                       onChange={(event) =>
                         setEducationDraft((prev) => ({
                           ...prev,
@@ -783,9 +783,9 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      type="date"
-                      value={educationDraft.end_date ?? ""}
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      type='date'
+                      value={educationDraft.end_date ?? ''}
                       onChange={(event) =>
                         setEducationDraft((prev) => ({
                           ...prev,
@@ -794,8 +794,8 @@ const OnboardingPage = () => {
                       }
                     />
                     <textarea
-                      className="min-h-20 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2"
-                      placeholder="Description"
+                      className='min-h-20 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2'
+                      placeholder='Description'
                       value={educationDraft.description}
                       onChange={(event) =>
                         setEducationDraft((prev) => ({
@@ -804,11 +804,11 @@ const OnboardingPage = () => {
                         }))
                       }
                     />
-                    <div className="flex items-center gap-3 md:col-span-2">
+                    <div className='flex items-center gap-3 md:col-span-2'>
                       <input
-                        className="w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                        type="number"
-                        placeholder="Order"
+                        className='w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                        type='number'
+                        placeholder='Order'
                         value={educationDraft.order}
                         onChange={(event) =>
                           setEducationDraft((prev) => ({
@@ -818,29 +818,29 @@ const OnboardingPage = () => {
                         }
                       />
                       <button
-                        className="rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]"
+                        className='rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]'
                         onClick={saveEducation}
                       >
-                        {editingEducationIndex === null ? "Add" : "Update"}
+                        {editingEducationIndex === null ? 'Add' : 'Update'}
                       </button>
                     </div>
                   </div>
-                  <div className="mt-3 space-y-2">
+                  <div className='mt-3 space-y-2'>
                     {educations.map((edu, index) => (
                       <div
                         key={`${edu.school}-${index}`}
-                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                        className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm'
                       >
                         <div>
-                          <p className="text-white">{edu.school}</p>
-                          <p className="text-xs text-white/50">
-                            {edu.degree || "Degree"} ·{" "}
-                            {edu.field_of_study || "Field"}
+                          <p className='text-white'>{edu.school}</p>
+                          <p className='text-xs text-white/50'>
+                            {edu.degree || 'Degree'} ·{' '}
+                            {edu.field_of_study || 'Field'}
                           </p>
                         </div>
-                        <div className="flex gap-2 text-xs">
+                        <div className='flex gap-2 text-xs'>
                           <button
-                            className="text-white/70"
+                            className='text-white/70'
                             onClick={() => {
                               setEditingEducationIndex(index);
                               setEducationDraft(edu);
@@ -849,7 +849,7 @@ const OnboardingPage = () => {
                             Edit
                           </button>
                           <button
-                            className="text-[#ffb0a8]"
+                            className='text-[#ffb0a8]'
                             onClick={() =>
                               setEducations((prev) =>
                                 prev.filter((_, i) => i !== index)
@@ -866,10 +866,10 @@ const OnboardingPage = () => {
 
                 <div>
                   <h3 className={`${space.className} text-xl`}>Certifications</h3>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className='mt-3 grid gap-3 md:grid-cols-2'>
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      placeholder="Certification"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      placeholder='Certification'
                       value={certificationDraft.name}
                       onChange={(event) =>
                         setCertificationDraft((prev) => ({
@@ -879,8 +879,8 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      placeholder="Issuer"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      placeholder='Issuer'
                       value={certificationDraft.issuer}
                       onChange={(event) =>
                         setCertificationDraft((prev) => ({
@@ -890,9 +890,9 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      type="date"
-                      value={certificationDraft.issue_date ?? ""}
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      type='date'
+                      value={certificationDraft.issue_date ?? ''}
                       onChange={(event) =>
                         setCertificationDraft((prev) => ({
                           ...prev,
@@ -901,9 +901,9 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      type="date"
-                      value={certificationDraft.expiration_date ?? ""}
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      type='date'
+                      value={certificationDraft.expiration_date ?? ''}
                       onChange={(event) =>
                         setCertificationDraft((prev) => ({
                           ...prev,
@@ -912,8 +912,8 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2"
-                      placeholder="Credential URL"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2'
+                      placeholder='Credential URL'
                       value={certificationDraft.credential_url}
                       onChange={(event) =>
                         setCertificationDraft((prev) => ({
@@ -922,11 +922,11 @@ const OnboardingPage = () => {
                         }))
                       }
                     />
-                    <div className="flex items-center gap-3 md:col-span-2">
+                    <div className='flex items-center gap-3 md:col-span-2'>
                       <input
-                        className="w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                        type="number"
-                        placeholder="Order"
+                        className='w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                        type='number'
+                        placeholder='Order'
                         value={certificationDraft.order}
                         onChange={(event) =>
                           setCertificationDraft((prev) => ({
@@ -936,28 +936,28 @@ const OnboardingPage = () => {
                         }
                       />
                       <button
-                        className="rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]"
+                        className='rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]'
                         onClick={saveCertification}
                       >
-                        {editingCertificationIndex === null ? "Add" : "Update"}
+                        {editingCertificationIndex === null ? 'Add' : 'Update'}
                       </button>
                     </div>
                   </div>
-                  <div className="mt-3 space-y-2">
+                  <div className='mt-3 space-y-2'>
                     {certifications.map((cert, index) => (
                       <div
                         key={`${cert.name}-${index}`}
-                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                        className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm'
                       >
                         <div>
-                          <p className="text-white">{cert.name}</p>
-                          <p className="text-xs text-white/50">
-                            {cert.issuer || "Issuer"}
+                          <p className='text-white'>{cert.name}</p>
+                          <p className='text-xs text-white/50'>
+                            {cert.issuer || 'Issuer'}
                           </p>
                         </div>
-                        <div className="flex gap-2 text-xs">
+                        <div className='flex gap-2 text-xs'>
                           <button
-                            className="text-white/70"
+                            className='text-white/70'
                             onClick={() => {
                               setEditingCertificationIndex(index);
                               setCertificationDraft(cert);
@@ -966,7 +966,7 @@ const OnboardingPage = () => {
                             Edit
                           </button>
                           <button
-                            className="text-[#ffb0a8]"
+                            className='text-[#ffb0a8]'
                             onClick={() =>
                               setCertifications((prev) =>
                                 prev.filter((_, i) => i !== index)
@@ -983,10 +983,10 @@ const OnboardingPage = () => {
 
                 <div>
                   <h3 className={`${space.className} text-xl`}>Achievements</h3>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className='mt-3 grid gap-3 md:grid-cols-2'>
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      placeholder="Title"
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      placeholder='Title'
                       value={achievementDraft.title}
                       onChange={(event) =>
                         setAchievementDraft((prev) => ({
@@ -996,9 +996,9 @@ const OnboardingPage = () => {
                       }
                     />
                     <input
-                      className="rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                      type="date"
-                      value={achievementDraft.date ?? ""}
+                      className='rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                      type='date'
+                      value={achievementDraft.date ?? ''}
                       onChange={(event) =>
                         setAchievementDraft((prev) => ({
                           ...prev,
@@ -1007,8 +1007,8 @@ const OnboardingPage = () => {
                       }
                     />
                     <textarea
-                      className="min-h-20 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2"
-                      placeholder="Description"
+                      className='min-h-20 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm md:col-span-2'
+                      placeholder='Description'
                       value={achievementDraft.description}
                       onChange={(event) =>
                         setAchievementDraft((prev) => ({
@@ -1017,11 +1017,11 @@ const OnboardingPage = () => {
                         }))
                       }
                     />
-                    <div className="flex items-center gap-3 md:col-span-2">
+                    <div className='flex items-center gap-3 md:col-span-2'>
                       <input
-                        className="w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm"
-                        type="number"
-                        placeholder="Order"
+                        className='w-24 rounded-2xl border border-white/10 bg-[#0c1218] px-4 py-2 text-sm'
+                        type='number'
+                        placeholder='Order'
                         value={achievementDraft.order}
                         onChange={(event) =>
                           setAchievementDraft((prev) => ({
@@ -1031,28 +1031,28 @@ const OnboardingPage = () => {
                         }
                       />
                       <button
-                        className="rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]"
+                        className='rounded-full bg-[#6de5c1] px-4 py-2 text-xs font-semibold text-[#0c1116]'
                         onClick={saveAchievement}
                       >
-                        {editingAchievementIndex === null ? "Add" : "Update"}
+                        {editingAchievementIndex === null ? 'Add' : 'Update'}
                       </button>
                     </div>
                   </div>
-                  <div className="mt-3 space-y-2">
+                  <div className='mt-3 space-y-2'>
                     {achievements.map((ach, index) => (
                       <div
                         key={`${ach.title}-${index}`}
-                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                        className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm'
                       >
                         <div>
-                          <p className="text-white">{ach.title}</p>
-                          <p className="text-xs text-white/50">
-                            {ach.date || "Date"}
+                          <p className='text-white'>{ach.title}</p>
+                          <p className='text-xs text-white/50'>
+                            {ach.date || 'Date'}
                           </p>
                         </div>
-                        <div className="flex gap-2 text-xs">
+                        <div className='flex gap-2 text-xs'>
                           <button
-                            className="text-white/70"
+                            className='text-white/70'
                             onClick={() => {
                               setEditingAchievementIndex(index);
                               setAchievementDraft(ach);
@@ -1061,7 +1061,7 @@ const OnboardingPage = () => {
                             Edit
                           </button>
                           <button
-                            className="text-[#ffb0a8]"
+                            className='text-[#ffb0a8]'
                             onClick={() =>
                               setAchievements((prev) =>
                                 prev.filter((_, i) => i !== index)
@@ -1078,20 +1078,20 @@ const OnboardingPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-3">
+            <div className='flex flex-col items-start gap-3'>
               <button
-                className="rounded-full bg-[#6de5c1] px-6 py-2 text-sm font-semibold text-[#0c1116]"
+                className='rounded-full bg-[#6de5c1] px-6 py-2 text-sm font-semibold text-[#0c1116]'
                 onClick={submitOnboarding}
               >
                 Finish onboarding
               </button>
               {statusMessage ? (
-                <p className="text-xs text-white/60">{statusMessage}</p>
+                <p className='text-xs text-white/60'>{statusMessage}</p>
               ) : null}
             </div>
             </section>
           </div>
-          <Footer variant="minimal" />
+          <Footer variant='minimal' />
         </main>
       </div>
     </ProtectedRoute>
