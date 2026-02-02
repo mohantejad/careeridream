@@ -93,6 +93,19 @@ const emptyAchievement: Achievement = {
   order: 0,
 };
 
+const normalizeDate = (value: string | null) => {
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  if (/^\d{4}$/.test(value)) return `${value}-01-01`;
+  const match = value.match(/^([A-Za-z]{3,9})\s+(\d{4})$/);
+  if (match) {
+    const [, monthStr, year] = match;
+    const month = new Date(`${monthStr} 1, ${year}`).getMonth() + 1;
+    return `${year}-${String(month).padStart(2, '0')}-01`;
+  }
+  return '';
+};
+
 const OnboardingPage = () => {
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
@@ -303,10 +316,33 @@ const OnboardingPage = () => {
       }));
     }
     if (Array.isArray(data.skills)) setSkills(data.skills);
-    if (Array.isArray(data.experiences)) setExperiences(data.experiences);
-    if (Array.isArray(data.educations)) setEducations(data.educations);
+    if (Array.isArray(data.experiences)) {
+      setExperiences(
+        data.experiences.map((exp) => ({
+          ...exp,
+          start_date: normalizeDate(exp.start_date),
+          end_date: normalizeDate(exp.end_date),
+        }))
+      );
+    }
+    if (Array.isArray(data.educations)) {
+      setEducations(
+        data.educations.map((edu) => ({
+          ...edu,
+          start_date: normalizeDate(edu.start_date),
+          end_date: normalizeDate(edu.end_date),
+        }))
+      );
+    }
     if (Array.isArray(data.certifications)) setCertifications(data.certifications);
-    if (Array.isArray(data.achievements)) setAchievements(data.achievements);
+    if (Array.isArray(data.achievements)) {
+      setAchievements(
+        data.achievements.map((ach) => ({
+          ...ach,
+          date: normalizeDate(ach.date),
+        }))
+      );
+    }
   };
 
   const parseResume = async () => {
