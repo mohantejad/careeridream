@@ -1,4 +1,4 @@
-"""Auth-related views for JWT and social login."""
+'''Auth-related views for JWT and social login.'''
 
 from django.conf import settings
 from rest_framework.views import APIView
@@ -11,12 +11,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 class CustomProviderAuthView(ProviderAuthView):
     """Set auth cookies after social login."""
     def post(self, request, *args, **kwargs):
+        # Delegate to Djoser to handle provider login.
         response = super().post(request, *args, **kwargs)
 
         if response.status_code == 201:
             access_token = response.data.get('access')
             refresh_token = response.data.get('refresh')
 
+            # Persist tokens in HttpOnly cookies for browser clients.
             response.set_cookie(
                 'access',
                 access_token,
@@ -41,10 +43,12 @@ class CustomProviderAuthView(ProviderAuthView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     """Set auth cookies after password login."""
     def post(self, request, *args, **kwargs):
+        # Use SimpleJWT to obtain a token pair.
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
             access_token = response.data.get('access')
             refresh_token = response.data.get('refresh')
+            # Optional remember-me flag extends refresh cookie lifetime.
             remember_me = str(request.data.get('remember_me', 'false')).lower() == 'true'
             refresh_max_age = (
                 settings.AUTH_COOKIE_REFRESH_MAX_AGE_REMEMBER
@@ -52,6 +56,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 else settings.AUTH_COOKIE_REFRESH_MAX_AGE
             )
 
+            # Store access + refresh tokens in cookies for the frontend.
             response.set_cookie(
                 'access',
                 access_token,
@@ -76,17 +81,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     """Refresh access token via refresh cookie."""
     def post(self, request, *args, **kwargs):
+        # Pull refresh token from cookies instead of request body.
         refresh_token = request.COOKIES.get('refresh')
 
         if refresh_token:
             request.data['refresh'] = refresh_token
-        print(refresh_token)
 
+        # Ask SimpleJWT to refresh the token pair.
         response = super().post(request, *args, **kwargs)
 
         if response.status_code == 200:
             access_token = response.data.get('access')
 
+            # Update only the access token cookie.
             response.set_cookie(
                 'access',
                 access_token,
@@ -102,6 +109,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 class CustomTokenVerifyView(TokenVerifyView):
     """Verify access token from cookie."""
     def post(self, request, *args, **kwargs):
+        # Use the access token from cookies to verify.
         access_token = request.COOKIES.get('access')
 
         if access_token:
@@ -112,6 +120,7 @@ class CustomTokenVerifyView(TokenVerifyView):
 class LogoutView(APIView):
     """Clear auth cookies."""
     def post(self, request, *args, **kwargs):
+        # Delete access and refresh cookies to log out the browser session.
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie('access')
         response.delete_cookie('refresh')

@@ -9,6 +9,7 @@ from .models import UserAccount
 
 
 class UserCreationForm(forms.ModelForm):
+    # Admin form to create a new user with password confirmation.
 
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
     password2 = forms.CharField(
@@ -20,7 +21,7 @@ class UserCreationForm(forms.ModelForm):
         fields = ["email", "first_name", "last_name"]
 
     def clean_password2(self):
-        # Check that the two password entries match
+        # Ensure the two entered passwords match.
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
@@ -28,7 +29,7 @@ class UserCreationForm(forms.ModelForm):
         return password2
 
     def save(self, commit=True):
-        # Save the provided password in hashed format
+        # Hash the password before saving the user instance.
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
@@ -37,11 +38,7 @@ class UserCreationForm(forms.ModelForm):
 
 
 class UserChangeForm(forms.ModelForm):
-    """A form for updating users. Includes all the fields on
-    the user, but replaces the password field with admin's
-    disabled password hash display field.
-    """
-
+    # Admin form to edit users; shows hashed password read-only.
     password = ReadOnlyPasswordHashField()
 
     class Meta:
@@ -50,27 +47,24 @@ class UserChangeForm(forms.ModelForm):
 
 
 class UserAdmin(BaseUserAdmin):
-    # The forms to add and change user instances
+    # Admin configuration for the custom UserAccount model.
     form = UserChangeForm
     add_form = UserCreationForm
 
-    # The fields to be used in displaying the User model.
-    # These override the definitions on the base UserAdmin
-    # that reference specific fields on auth.User.
     list_display = ["email", "first_name", "is_staff"]
     list_filter = ["is_staff"]
     fieldsets = [
+        # Group fields in the admin detail view.
         (None, {"fields": ["email", "password"]}),
         ("Personal info", {"fields": ["first_name"]}),
         ("Permissions", {"fields": ["is_staff"]}),
     ]
-    # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
-    # overrides get_fieldsets to use this attribute when creating a user.
     add_fieldsets = [
         (
             None,
             {
                 "classes": ["wide"],
+                # Fields shown on the add-user form in admin.
                 "fields": ["email", "first_name", "password1", "password2"],
             },
         ),

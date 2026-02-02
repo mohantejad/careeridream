@@ -15,10 +15,10 @@
 {% block text_body %}
 {% blocktrans %}You are receiving this email because you registered for an CareerIDream account and need to complete your activation process.{% endblocktrans %}
 
-{% trans "Please click the link below to activate your CareerIDream account:" %}
+{% trans 'Please click the link below to activate your CareerIDream account:' %}
 https://{{ domain }}/{{ url|safe }}
 
-{% trans "Thank you for choosing CareerIDream!" %}
+{% trans 'Thank you for choosing CareerIDream!' %}
 
 {% blocktrans %}The CareerIDream Team{% endblocktrans %}
 {% endblock text_body %}
@@ -30,10 +30,10 @@ https://{{ domain }}/{{ url|safe }}
 {% block html_body %}
 <p>{% blocktrans %}You are receiving this email because you registered for an CareerIDream account and need to complete your activation process.{% endblocktrans %}</p>
 
-<p>{% trans "Please click the link below to activate your CareerIDream account:" %}</p>
-<p><a href="https://{{ domain }}/{{ url|safe }}">Activate your CareerIDream account</a></p>
+<p>{% trans 'Please click the link below to activate your CareerIDream account:' %}</p>
+<p><a href='https://{{ domain }}/{{ url|safe }}'>Activate your CareerIDream account</a></p>
 
-<p>{% trans "Thank you for choosing CareerIDream!" %}</p>
+<p>{% trans 'Thank you for choosing CareerIDream!' %}</p>
 
 <p>{% blocktrans %}The CareerIDream Team{% endblocktrans %}</p>
 {% endblock html_body %}

@@ -5,20 +5,23 @@ from django.core.management.utils import get_random_secret_key
 import dotenv
 
 
+# Base directory for building paths.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-dotenv_file = BASE_DIR / '.env.local'
+# Load environment variables from local .env if present.
+dotenv_file = BASE_DIR / '.env'
 
 if path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
 
-
+# Secret key for cryptographic signing.
 SECRET_KEY = getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 
+# Environment flags for local development.
 DEBUG = getenv('DEBUG', 'False') == 'True'
-
 DEVELOPMENT_MODE = getenv('DEVELOPMENT_MODE', 'False') == 'True'
 
+# Hosts that are allowed to serve this app.
 ALLOWED_HOSTS = [
     h.strip()
     for h in getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
@@ -55,6 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Root URL configuration.
 ROOT_URLCONF = 'main.urls'
 
 TEMPLATES = [
@@ -72,40 +76,26 @@ TEMPLATES = [
     },
 ]
 
+# WSGI entrypoint (used by most Django servers).
 WSGI_APPLICATION = 'main.wsgi.application'
 
-if DEVELOPMENT_MODE is True:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': getenv('DB_NAME', 'careeridreamlocaldb'),
-            'USER': getenv('DB_USER', 'careeridreamlocaluser'),
-            'PASSWORD': getenv('DB_PASSWORD', 'careeridreamlocalpassword'),
-            'HOST': getenv('DB_HOST', 'localhost'),
-            'PORT': getenv('DB_PORT', '5432'),
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.config(default=getenv('DATABASE_URL'))
-    }
+# Database configuration (uses DATABASE_URL).
+# DATABASES = { 'default': dj_database_url.config(default=getenv('DATABASE_URL')) }
+DATABASES = {
+    'default': dj_database_url.config(
+        default=getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600,
+        ssl_require=not DEBUG,
+    )
+}
 
-
+# Password validation rules.
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
-
 
 LANGUAGE_CODE = 'en-us'
 
@@ -115,13 +105,13 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Static/media configuration.
 if DEVELOPMENT_MODE:
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'static'
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 else:
-    # =========== Static Files with Whitenoise ===========
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
     STORAGES = {
@@ -133,29 +123,30 @@ else:
         }
     }
 
+# Email settings (Resend or SMTP).
 EMAIL_API_KEY = getenv('EMAIL_API_KEY')
-
 EMAIL_BACKEND = getenv('EMAIL_BACKEND')
-# Prefer Resend HTTP backend whenever EMAIL_API_KEY is present.
 if EMAIL_API_KEY:
     EMAIL_BACKEND = 'users.email_backends.ResendEmailBackend'
 EMAIL_HOST = getenv('EMAIL_HOST')
 EMAIL_PORT = getenv('EMAIL_PORT')
-EMAIL_USE_TLS = getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_USE_TLS = getenv('EMAIL_USE_TLS', 'False') == 'True'
 EMAIL_HOST_USER = getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = getenv('DEFAULT_FROM_EMAIL')
 EMAIL_TIMEOUT = 10
 
+# Frontend domain and site name.
 DOMAIN = getenv('DOMAIN', 'localhost:3000')
 SITE_NAME = 'CareerIDream'
 
+# Authentication backends.
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
-    # 'social_core.backends.facebook.FacebookOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
+# DRF defaults.
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -165,7 +156,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-REDIRECT_URLS = [u.strip() for u in getenv("REDIRECT_URLS", "").split(",") if u.strip()]
+REDIRECT_URLS = [u.strip() for u in getenv('REDIRECT_URLS', '').split(',') if u.strip()]
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '/password-reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '/username-reset/confirm/{uid}/{token}',
@@ -182,11 +173,11 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
     'USERNAME_RESET_CONFIRM_RETYPE': True,
     'TOKEN_MODEL': None,
-    # 'SERIALIZERS': {
-    #     'user_create': 'users.serializers.UserCreateSerializer',
-    #     'user': 'users.serializers.UserSerializer',
-    #     'current_user': 'users.serializers.UserSerializer',
-    # },
+    'SERIALIZERS': {
+        'user_create': 'users.serializers.UserCreateSerializer',
+        'user': 'users.serializers.UserSerializer',
+        'current_user': 'users.serializers.UserSerializer',
+    },
     'EMAIL': {
         'activation': 'users.emails.ActivationEmail',
         'confirmation': 'users.emails.ConfirmationEmail',
@@ -194,6 +185,7 @@ DJOSER = {
     'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': REDIRECT_URLS,
 }
 
+# Google OAuth settings.
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = getenv('GOOGLE_AUTH_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = getenv('GOOGLE_AUTH_SECRET')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
@@ -201,67 +193,66 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'openid'
 ]
-
 SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
     'prompt': 'select_account'
 }
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
 
+# Cookie configuration for JWT auth.
 AUTH_COOKIE = 'access'
 
-if DEBUG or DEVELOPMENT_MODE:
-    AUTH_COOKIE_SECURE = False
-    AUTH_COOKIE_SAMESITE = 'Lax'
-else:
-    AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True') == 'True'
-    AUTH_COOKIE_SAMESITE = getenv("AUTH_COOKIE_SAMESITE", "None")
+AUTH_COOKIE_SECURE = getenv('AUTH_COOKIE_SECURE', 'True').lower() in ('1', 'true', 'yes', 'on')
+AUTH_COOKIE_SAMESITE = getenv('AUTH_COOKIE_SAMESITE', 'Lax')
 
+# Cookie security settings for session + CSRF.
 if DEBUG or DEVELOPMENT_MODE:
     SESSION_COOKIE_SECURE = False
-    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SECURE = False
-    CSRF_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = 'Lax'
 else:
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_SAMESITE = "None"
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_SAMESITE = "None"
+    SESSION_COOKIE_SECURE = AUTH_COOKIE_SECURE
+    SESSION_COOKIE_SAMESITE = AUTH_COOKIE_SAMESITE
+    CSRF_COOKIE_SECURE = AUTH_COOKIE_SECURE
+    CSRF_COOKIE_SAMESITE = AUTH_COOKIE_SAMESITE
 
-AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 5
-AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24
-# Longer refresh window when "remember me" is enabled (30 days).
+# Auth cookie lifetimes.
+AUTH_COOKIE_ACCESS_MAX_AGE = int(getenv('AUTH_COOKIE_ACCESS_MAX_AGE', 60 * 5))
+AUTH_COOKIE_REFRESH_MAX_AGE =int(getenv('AUTH_COOKIE_REFRESH_MAX_AGE', 60 * 60 * 24))
 AUTH_COOKIE_REFRESH_MAX_AGE_REMEMBER = 60 * 60 * 24 * 30
 AUTH_COOKIE_HTTP_ONLY = True
 AUTH_COOKIE_PATH = '/'
 
+# Custom user model.
 AUTH_USER_MODEL = 'users.UserAccount'
 
+# Default primary key type.
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Logging for request errors.
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {"class": "logging.StreamHandler"},
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
     },
-    "loggers": {
-        "django.request": {
-            "handlers": ["console"],
-            "level": "ERROR",
-            "propagate": True,
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
         },
     },
 }
 
+# CORS configuration.
 CORS_ALLOWED_ORIGINS = [
     o.strip() for o in getenv(
-        "CORS_ALLOWED_ORIGINS",
-        "http://localhost:3000,http://127.0.0.1:3000",
-    ).split(",") if o.strip()
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:3000,http://127.0.0.1:3000',
+    ).split(',') if o.strip()
 ]
-# Do not rely on env var regex strings; keep this explicit in settings.
-# Add exact production origins via CORS_ALLOWED_ORIGINS env instead.
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -275,6 +266,7 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# CSRF trusted origins.
 CSRF_TRUSTED_ORIGINS = [
-    o.strip() for o in getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+    o.strip() for o in getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()
 ]

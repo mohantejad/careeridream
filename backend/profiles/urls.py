@@ -1,4 +1,4 @@
-"""Profile API routes."""
+'''Profile API routes.'''
 
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
@@ -13,13 +13,13 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r"profile", UserProfileViewSet, basename="profile")
-router.register(r"skills", SkillViewSet, basename="skills")
-router.register(r"experiences", ExperienceViewSet, basename="experiences")
-router.register(r"educations", EducationViewSet, basename="educations")
-router.register(r"certifications", CertificationViewSet, basename="certifications")
-router.register(r"achievements", AchievementViewSet, basename="achievements")
+router.register(r'profile', UserProfileViewSet, basename='profile')
+router.register(r'skills', SkillViewSet, basename='skills')
+router.register(r'experiences', ExperienceViewSet, basename='experiences')
+router.register(r'educations', EducationViewSet, basename='educations')
+router.register(r'certifications', CertificationViewSet, basename='certifications')
+router.register(r'achievements', AchievementViewSet, basename='achievements')
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path('', include(router.urls)),
 ]
