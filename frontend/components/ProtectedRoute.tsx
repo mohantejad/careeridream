@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch } from '@/lib/api';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     let isMounted = true;
     const verify = async () => {
       try {
-        const response = await apiFetch("/auth/users/me/");
+        const response = await apiFetch('/auth/users/me/');
         if (!isMounted) return;
         if (response.ok) {
           setIsAllowed(true);
@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         if (!isMounted) return;
       }
 
-      router.replace("/login");
+      router.replace('/login');
     };
 
     void verify().finally(() => {

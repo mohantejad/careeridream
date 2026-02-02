@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { sora, space } from "@/app/fonts";
-import Header from "./Header";
-import Footer from "./Footer";
-import { apiFetch } from "@/lib/api";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { sora, space } from '@/app/fonts';
+import Header from './Header';
+import Footer from './Footer';
+import { apiFetch } from '@/lib/api';
 
 
 type CurrentUser = {
@@ -52,14 +52,14 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
     let isMounted = true;
     const load = async () => {
       try {
-        const response = await apiFetch("/profiles/profile/me/");
+        const response = await apiFetch('/profiles/profile/me/');
         if (!isMounted) return;
         if (response.ok) {
           const data = (await response.json()) as {
             profile_completeness?: number;
           };
           setProfileCompleteness(
-            typeof data.profile_completeness === "number"
+            typeof data.profile_completeness === 'number'
               ? data.profile_completeness
               : null
           );
@@ -75,7 +75,7 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
   }, []);
 
   const completenessLabel =
-    profileCompleteness === null ? "--" : `${profileCompleteness}%`;
+    profileCompleteness === null ? '--' : `${profileCompleteness}%`;
 
   return (
     <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>
@@ -88,7 +88,7 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
             showAuthButtons={false}
             showProfileMenu
             userInitials={initials}
-            navVariant="app"
+            navVariant='app'
           />
           <section className='mt-16 grid gap-8 md:grid-cols-[1.1fr_0.9fr] md:items-center'>
             <div className='space-y-5'>
