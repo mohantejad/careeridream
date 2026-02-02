@@ -94,7 +94,7 @@ const emptyAchievement: Achievement = {
 };
 
 const normalizeDate = (value: string | null) => {
-  if (!value) return '';
+  if (!value) return null;
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   if (/^\d{4}$/.test(value)) return `${value}-01-01`;
   const match = value.match(/^([A-Za-z]{3,9})\s+(\d{4})$/);
@@ -103,7 +103,7 @@ const normalizeDate = (value: string | null) => {
     const month = new Date(`${monthStr} 1, ${year}`).getMonth() + 1;
     return `${year}-${String(month).padStart(2, '0')}-01`;
   }
-  return '';
+  return null;
 };
 
 const OnboardingPage = () => {
@@ -320,8 +320,8 @@ const OnboardingPage = () => {
       setExperiences(
         data.experiences.map((exp) => ({
           ...exp,
-          start_date: normalizeDate(exp.start_date),
-          end_date: normalizeDate(exp.end_date),
+          start_date: normalizeDate(exp.start_date) ?? '',
+          end_date: exp.is_current ? '' : (normalizeDate(exp.end_date) ?? ''),
         }))
       );
     }
@@ -329,8 +329,8 @@ const OnboardingPage = () => {
       setEducations(
         data.educations.map((edu) => ({
           ...edu,
-          start_date: normalizeDate(edu.start_date),
-          end_date: normalizeDate(edu.end_date),
+          start_date: normalizeDate(edu.start_date) ?? '',
+          end_date: normalizeDate(edu.end_date) ?? '',
         }))
       );
     }
@@ -339,7 +339,7 @@ const OnboardingPage = () => {
       setAchievements(
         data.achievements.map((ach) => ({
           ...ach,
-          date: normalizeDate(ach.date),
+          date: normalizeDate(ach.date) ?? '',
         }))
       );
     }
@@ -391,10 +391,25 @@ const OnboardingPage = () => {
     const formData = new FormData();
     formData.append('profile', JSON.stringify(profileDraft));
     formData.append('skills', JSON.stringify(skills));
-    formData.append('experiences', JSON.stringify(experiences));
-    formData.append('educations', JSON.stringify(educations));
+    const cleanedExperiences = experiences.map((exp) => ({
+      ...exp,
+      start_date: exp.start_date || null,
+      end_date: exp.is_current ? null : (exp.end_date || null),
+    }));
+    const cleanedEducations = educations.map((edu) => ({
+      ...edu,
+      start_date: edu.start_date || null,
+      end_date: edu.end_date || null,
+    }));
+    const cleanedAchievements = achievements.map((ach) => ({
+      ...ach,
+      date: ach.date || null,
+    }));
+
+    formData.append('experiences', JSON.stringify(cleanedExperiences));
+    formData.append('educations', JSON.stringify(cleanedEducations));
     formData.append('certifications', JSON.stringify(certifications));
-    formData.append('achievements', JSON.stringify(achievements));
+    formData.append('achievements', JSON.stringify(cleanedAchievements));
     if (resumeFile) {
       formData.append('resume_file', resumeFile);
     }
