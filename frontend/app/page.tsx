@@ -26,18 +26,15 @@ export default function Home() {
 
     const fetchCurrentUser = async () => {
       try {
-        const response = await apiFetch('/auth/users/me/');
+        const [response, onboardingResponse] = await Promise.all([
+          apiFetch('/auth/users/me/'),
+          apiFetch('/profiles/profile/onboarding/'),
+        ]);
 
         if (!isMounted) return;
 
         if (response.ok) {
           const data = (await response.json()) as CurrentUser;
-          const onboardingResponse = await apiFetch(
-            '/profiles/profile/onboarding/'
-          );
-
-          if (!isMounted) return;
-
           if (onboardingResponse.ok) {
             const onboardingData = (await onboardingResponse.json()) as {
               needs_onboarding: boolean;

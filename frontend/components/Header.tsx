@@ -5,9 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { space } from "@/app/fonts";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+import { apiFetch } from "@/lib/api";
 
 type NavLink = {
   label: string;
@@ -15,6 +13,7 @@ type NavLink = {
   external?: boolean;
 };
 
+// Public landing-page navigation anchors.
 const publicNavLinks: NavLink[] = [
   { label: "Product", href: "#product" },
   { label: "Workflow", href: "#workflow" },
@@ -44,6 +43,7 @@ const Header = ({
   useEffect(() => {
     if (!isMenuOpen) return;
 
+    // Close menu when clicking outside of the dropdown.
     const handleClickOutside = (event: MouseEvent) => {
       if (!menuRef.current) return;
       if (!menuRef.current.contains(event.target as Node)) {
@@ -51,6 +51,7 @@ const Header = ({
       }
     };
 
+    // Close menu on Escape key.
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMenuOpen(false);
@@ -68,15 +69,14 @@ const Header = ({
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/auth/logout/`, {
-        method: "POST",
-        credentials: "include",
-      });
+      // Clear auth cookies on the backend.
+      await apiFetch("/auth/logout/", { method: "POST" });
     } finally {
       window.location.href = "/";
     }
   };
 
+  // Authenticated app navigation.
   const appNavLinks: NavLink[] = [
     { label: "Dashboard", href: "/dashboard" },
     {
@@ -96,6 +96,7 @@ const Header = ({
         onClick={() => router.push("/")}
         style={{ cursor: "pointer" }}
       >
+        {/* Brand mark + name */}
         <div className="glow-ring flex h-10 w-10 items-center justify-center rounded-full bg-[#101821]">
           <span className={`${space.className} text-sm font-bold`}>CID</span>
         </div>
@@ -107,6 +108,7 @@ const Header = ({
         </div>
       </div>
       {showNavLinks ? (
+        // Primary navigation links (hidden on mobile).
         <nav className="hidden items-center gap-7 text-sm text-white/70 md:flex lg:gap-8">
           {navLinks.map((link) => (
             <a
@@ -114,7 +116,7 @@ const Header = ({
               className="nav-underline transition hover:text-white"
               href={link.href}
               target={link.external ? "_blank" : undefined}
-              rel={link.external ? "noreferrer" : undefined}
+              rel={link.external ? "noopener noreferrer" : undefined}
             >
               {link.label}
             </a>
@@ -126,6 +128,7 @@ const Header = ({
       <div className="flex items-center gap-3">
         {showAuthButtons ? (
           <>
+            {/* Public auth CTAs */}
             <Link
               className="hidden rounded-full border border-white/20 px-4 py-2 text-sm text-white/80 transition hover:border-white/50 hover:text-white md:inline-flex"
               href="/login"
@@ -151,6 +154,7 @@ const Header = ({
               {userInitials}
             </button>
             {isMenuOpen ? (
+              // Profile dropdown menu.
               <div className="absolute right-0 mt-3 w-44 rounded-2xl border border-white/10 bg-[#0f1720] p-2 text-xs text-white/80 shadow-xl shadow-black/40">
                 <Link
                   className="block rounded-xl px-3 py-2 transition hover:bg-white/10"
