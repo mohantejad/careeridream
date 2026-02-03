@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { space } from '@/app/fonts';
 import { apiFetch } from '@/lib/api';
+import { useAuth } from '@/components/AuthProvider';
 
 type NavLink = {
   label: string;
@@ -37,6 +38,7 @@ const Header = ({
   navVariant = 'public',
 }: HeaderProps) => {
   const router = useRouter();
+  const auth = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -86,10 +88,28 @@ const Header = ({
       external: true,
     },
     { label: 'Templates', href: '/templates' },
-    { label: 'Pricing', href: '/pricing' },
+    { label: 'Upgrade', href: '/upgrade' },
   ];
 
-  const navLinks = navVariant === 'app' ? appNavLinks : publicNavLinks;
+  let resolvedNavVariant = navVariant;
+  let resolvedShowAuthButtons = showAuthButtons;
+  let resolvedShowProfileMenu = showProfileMenu;
+  let resolvedInitials = userInitials;
+
+  if (
+    auth?.isAuthenticated &&
+    navVariant === 'public' &&
+    showAuthButtons &&
+    !showProfileMenu
+  ) {
+    resolvedNavVariant = 'app';
+    resolvedShowAuthButtons = false;
+    resolvedShowProfileMenu = true;
+    resolvedInitials = auth.initials;
+  }
+
+  const navLinks =
+    resolvedNavVariant === 'app' ? appNavLinks : publicNavLinks;
   return (
     <header className='reveal flex items-center justify-between'>
       <div
@@ -127,7 +147,7 @@ const Header = ({
         <div />
       )}
       <div className='flex items-center gap-3'>
-        {showAuthButtons ? (
+        {resolvedShowAuthButtons ? (
           <>
             {/* Public auth CTAs */}
             <Link
@@ -144,7 +164,7 @@ const Header = ({
             </Link>
           </>
         ) : null}
-        {showProfileMenu ? (
+        {resolvedShowProfileMenu ? (
           <div className='relative' ref={menuRef}>
             <button
               className='cursor-pointer flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-sm font-semibold text-white transition hover:border-white/40'
@@ -152,7 +172,7 @@ const Header = ({
               aria-haspopup='menu'
               aria-expanded={isMenuOpen}
             >
-              {userInitials}
+              {resolvedInitials}
             </button>
             {isMenuOpen ? (
               // Profile dropdown menu.

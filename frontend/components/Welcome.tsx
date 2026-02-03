@@ -13,11 +13,20 @@ type CurrentUser = {
   last_name?: string;
 };
 
+type SavedDraft = {
+  id: number;
+  content?: {
+    fit_score?: number;
+  };
+};
+
 const Welcome = ({ user }: { user: CurrentUser }) => {
   const router = useRouter();
   const [profileCompleteness, setProfileCompleteness] = useState<number | null>(
     null
   );
+  const [activeDrafts, setActiveDrafts] = useState<number | null>(null);
+  const [jdMatches, setJdMatches] = useState<number | null>(null);
   const firstName = user.first_name || user.email.split('@')[0];
   const initialsSource =
     `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
@@ -34,17 +43,19 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
       title: 'Create a tailored resume',
       desc: 'Start from a JD and generate an ATS-ready resume.',
       cta: 'New resume',
+      href: '/generate?type=resume',
     },
     {
       title: 'Draft a cover letter',
       desc: 'Match your tone to the role and ship it fast.',
       cta: 'New cover letter',
+      href: '/generate?type=cover-letter',
     },
     {
       title: 'Polish your profile',
       desc: 'Keep skills, projects, and metrics up to date.',
       cta: 'Update profile',
-      onClick: () => router.push('/profile'),
+      href: '/profile',
     },
   ];
 
@@ -52,10 +63,13 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
     let isMounted = true;
     const load = async () => {
       try {
-        const response = await apiFetch('/profiles/profile/me/');
+        const [profileResponse, draftsResponse] = await Promise.all([
+          apiFetch('/profiles/profile/me/'),
+          apiFetch('/drafts/drafts/'),
+        ]);
         if (!isMounted) return;
-        if (response.ok) {
-          const data = (await response.json()) as {
+        if (profileResponse.ok) {
+          const data = (await profileResponse.json()) as {
             profile_completeness?: number;
           };
           setProfileCompleteness(
@@ -64,8 +78,20 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
               : null
           );
         }
+        if (draftsResponse.ok) {
+          const data = (await draftsResponse.json()) as SavedDraft[];
+          const matches = data.filter(
+            (draft) => (draft.content?.fit_score ?? 0) >= 90
+          ).length;
+          setActiveDrafts(data.length);
+          setJdMatches(matches);
+        }
       } catch {
         if (isMounted) setProfileCompleteness(null);
+        if (isMounted) {
+          setActiveDrafts(null);
+          setJdMatches(null);
+        }
       }
     };
     void load();
@@ -76,6 +102,8 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
 
   const completenessLabel =
     profileCompleteness === null ? '--' : `${profileCompleteness}%`;
+  const activeDraftsLabel = activeDrafts === null ? '--' : `${activeDrafts}`;
+  const jdMatchesLabel = jdMatches === null ? '--' : `${jdMatches}`;
 
   return (
     <div className={`${sora.className} min-h-screen bg-[#212223] text-white`}>
@@ -103,10 +131,16 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
                 will do the matching, drafting, and polish in minutes.
               </p>
               <div className='flex flex-wrap gap-3'>
-                <button className='cursor-pointer rounded-full bg-[#6de5c1] px-6 py-3 text-sm font-semibold text-[#0c1116] transition hover:-translate-y-0.5'>
+                <button
+                  className='cursor-pointer rounded-full bg-[#6de5c1] px-6 py-3 text-sm font-semibold text-[#0c1116] transition hover:-translate-y-0.5'
+                  onClick={() => router.push('/generate?type=resume')}
+                >
                   Create resume
                 </button>
-                <button className='cursor-pointer rounded-full border border-white/20 px-6 py-3 text-sm text-white/80 transition hover:border-white/60'>
+                <button
+                  className='cursor-pointer rounded-full border border-white/20 px-6 py-3 text-sm text-white/80 transition hover:border-white/60'
+                  onClick={() => router.push('/generate?type=resume&focus=jd')}
+                >
                   Upload a JD
                 </button>
               </div>
@@ -122,11 +156,11 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
                 </div>
                 <div className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3'>
                   <span>Active drafts</span>
-                  <span className='text-white'>2</span>
+                  <span className='text-white'>{activeDraftsLabel}</span>
                 </div>
                 <div className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3'>
                   <span>JD matches</span>
-                  <span className='text-white'>5</span>
+                  <span className='text-white'>{jdMatchesLabel}</span>
                 </div>
               </div>
             </div>
@@ -144,7 +178,7 @@ const Welcome = ({ user }: { user: CurrentUser }) => {
                 <p className='mt-3'>{action.desc}</p>
                 <button
                   className='mt-5 cursor-pointer rounded-full border border-white/20 px-4 py-2 text-xs text-white/80 transition hover:border-white/60'
-                  onClick={action.onClick}
+                  onClick={() => router.push(action.href)}
                 >
                   {action.cta}
                 </button>

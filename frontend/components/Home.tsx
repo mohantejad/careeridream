@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Footer from './Footer';
 import { sora, space } from '@/app/fonts';
 import Header from './Header';
@@ -50,9 +51,12 @@ const HomeComponent = () => {
                 minutes. No blank pages. No guessing.
               </p>
               <div className='reveal delay-3 flex flex-wrap items-center gap-4'>
-                <button className='cursor-pointer rounded-full bg-[#6de5c1] px-6 py-3 text-sm font-semibold text-[#0c1116] shadow-lg shadow-[#6de5c1]/30 transition hover:-translate-y-0.5'>
+                <Link
+                  className='rounded-full bg-[#6de5c1] px-6 py-3 text-sm font-semibold text-[#0c1116] shadow-lg shadow-[#6de5c1]/30 transition hover:-translate-y-0.5'
+                  href='/signup'
+                >
                   Start free
-                </button>
+                </Link>
                 <button className='cursor-pointer rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white/80 transition hover:border-white/60 hover:text-white'>
                   Watch demo
                 </button>
@@ -101,9 +105,12 @@ const HomeComponent = () => {
                       <p className='text-white/50'>Modern, confident</p>
                     </div>
                   </div>
-                  <button className='w-full rounded-2xl bg-white/10 px-4 py-3 text-sm text-white/80'>
+                  <Link
+                    className='block w-full rounded-2xl bg-white/10 px-4 py-3 text-center text-sm text-white/80'
+                    href='/generate?type=cover-letter'
+                  >
                     Generate cover letter draft
-                  </button>
+                  </Link>
                 </div>
               </div>
               <div className='float absolute -bottom-6 right-4 rounded-2xl border border-white/15 bg-[#141d2a]/90 p-4 text-xs text-white/70 shadow-xl shadow-black/40'>

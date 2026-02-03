@@ -95,3 +95,27 @@
   opacity: 1;
   transform: translateX(0);
 }
+
+a,
+button,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main > footer {
+  margin-top: auto;
+}

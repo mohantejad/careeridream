@@ -33,6 +33,9 @@ from .serializers import (
 GROQ_API_KEY = getenv('GROQ_API_KEY')
 GROQ_MODEL = getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
 
+def truncate_text(text: str, max_chars: int) -> str:
+    return text[:max_chars] if text and len(text) > max_chars else text
+
 def strip_code_fences(text: str) -> str:
     text = text.strip()
     if text.startswith("```"):
@@ -41,6 +44,51 @@ def strip_code_fences(text: str) -> str:
     if text.endswith("```"):
         text = text.rsplit("```", 1)[0]
     return text.strip()
+
+def build_profile_payload(profile: UserProfile) -> dict:
+    data = UserProfileDetailSerializer(profile).data
+    # Remove fields not needed for generation.
+    data.pop('id', None)
+    data.pop('profile_completeness', None)
+    data.pop('updated_at', None)
+    data.pop('resume_file', None)
+    return data
+
+def call_groq(system_prompt: str, user_content: str, model: str) -> dict:
+    try:
+        import requests
+        response = requests.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {GROQ_API_KEY}',
+            },
+            json={
+                'model': model,
+                'temperature': 0.2,
+                'messages': [
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': user_content},
+                ],
+            },
+            timeout=60,
+        )
+    except Exception as exc:
+        return {'error': f'Groq request failed: {exc}', 'status': status.HTTP_502_BAD_GATEWAY}
+
+    if response.status_code >= 400:
+        return {
+            'error': 'Groq API error.',
+            'status': status.HTTP_502_BAD_GATEWAY,
+        }
+
+    data = response.json()
+    content = (
+        data.get('choices', [{}])[0]
+        .get('message', {})
+        .get('content', '')
+    )
+    return {'content': content}
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -321,6 +369,132 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                     'detail': 'Model output was not valid JSON.',
                     'raw_output': text,
                 },
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        return Response(parsed, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'])
+    def generate_resume(self, request):
+        '''Generate a structured resume draft from profile + job description.'''
+        profile = self._get_profile_or_404(request)
+        if not profile:
+            return Response({'detail': 'Profile not found.'}, status=404)
+
+        jd_text = (request.data.get('job_description') or '').strip()
+        if not jd_text:
+            return Response({'detail': 'job_description is required.'}, status=400)
+
+        if not GROQ_API_KEY:
+            return Response(
+                {'detail': 'GROQ_API_KEY is not configured.'},
+                status=status.HTTP_501_NOT_IMPLEMENTED,
+            )
+
+        template_style = (request.data.get('template_style') or 'modern').strip()
+        profile_payload = build_profile_payload(profile)
+        jd_text = truncate_text(jd_text, 6000)
+
+        system_prompt = (
+            'You are a resume writer and evaluator. Use the profile data and job description to craft a tailored resume.\n'
+            'Return STRICT JSON only (no markdown). Use this schema:\n'
+            '{\n'
+            '  "headline": string,\n'
+            '  "summary": string,\n'
+            '  "skills": [string],\n'
+            '  "experiences": [\n'
+            '    {\n'
+            '      "company": string,\n'
+            '      "title": string,\n'
+            '      "location": string,\n'
+            '      "start_date": string,\n'
+            '      "end_date": string|null,\n'
+            '      "is_current": boolean,\n'
+            '      "bullets": [string]\n'
+            '    }\n'
+            '  ],\n'
+            '  "education": [\n'
+            '    {"school": string, "degree": string, "field_of_study": string, "start_date": string|null, "end_date": string|null}\n'
+            '  ],\n'
+            '  "certifications": [string],\n'
+            '  "achievements": [string],\n'
+            '  "fit_score": number,\n'
+            '  "strengths": [string],\n'
+            '  "weaknesses": [string]\n'
+            '}\n'
+            'fit_score must be 0-100. strengths/weaknesses should each be at most 2 items.\n'
+            f'Template style: {template_style}. Prioritize relevance to the job description.'
+        )
+
+        user_content = json.dumps(
+            {'profile': profile_payload, 'job_description': jd_text},
+            ensure_ascii=False,
+        )
+
+        result = call_groq(system_prompt, user_content, GROQ_MODEL)
+        if 'error' in result:
+            return Response({'detail': result['error']}, status=result['status'])
+
+        text = strip_code_fences(result.get('content', ''))
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            return Response(
+                {'detail': 'Model output was not valid JSON.', 'raw_output': text},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        return Response(parsed, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'])
+    def generate_cover_letter(self, request):
+        '''Generate a structured cover letter draft from profile + job description.'''
+        profile = self._get_profile_or_404(request)
+        if not profile:
+            return Response({'detail': 'Profile not found.'}, status=404)
+
+        jd_text = (request.data.get('job_description') or '').strip()
+        if not jd_text:
+            return Response({'detail': 'job_description is required.'}, status=400)
+
+        if not GROQ_API_KEY:
+            return Response(
+                {'detail': 'GROQ_API_KEY is not configured.'},
+                status=status.HTTP_501_NOT_IMPLEMENTED,
+            )
+
+        template_style = (request.data.get('template_style') or 'modern').strip()
+        profile_payload = build_profile_payload(profile)
+        jd_text = truncate_text(jd_text, 6000)
+
+        system_prompt = (
+            'You are a cover letter writer. Use the profile data and job description to craft a tailored letter.\n'
+            'Return STRICT JSON only (no markdown). Use this schema:\n'
+            '{\n'
+            '  "subject": string,\n'
+            '  "greeting": string,\n'
+            '  "body_paragraphs": [string],\n'
+            '  "closing": string,\n'
+            '  "signature": string\n'
+            '}\n'
+            f'Template style: {template_style}. Keep it concise and role-specific.'
+        )
+
+        user_content = json.dumps(
+            {'profile': profile_payload, 'job_description': jd_text},
+            ensure_ascii=False,
+        )
+
+        result = call_groq(system_prompt, user_content, GROQ_MODEL)
+        if 'error' in result:
+            return Response({'detail': result['error']}, status=result['status'])
+
+        text = strip_code_fences(result.get('content', ''))
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            return Response(
+                {'detail': 'Model output was not valid JSON.', 'raw_output': text},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 

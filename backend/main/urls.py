@@ -14,6 +14,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls')),
     path('auth/', include('users.urls')),
     path('profiles/', include('profiles.urls')),
+    path('drafts/', include('drafts.urls')),
     path('health/', health_check),
 ]
 

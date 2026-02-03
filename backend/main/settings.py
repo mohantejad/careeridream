@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'users',
     'profiles.apps.ProfilesConfig',
+    'drafts.apps.DraftsConfig',
 ]
 
 MIDDLEWARE = [
