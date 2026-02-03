@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="careerIDream logo">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#1a2430"/>
+      <stop offset="100%" stop-color="#0c1116"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#6de5c1" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#6de5c1" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#0c1116"/>
+  <circle cx="256" cy="256" r="196" fill="url(#bg)"/>
+  <circle cx="256" cy="248" r="190" fill="url(#glow)" filter="url(#softGlow)"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="6"/>
+  <text x="256" y="285" text-anchor="middle" font-size="120" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="700" fill="#f3f6fa">
+    CID
+  </text>
+</svg>
