@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -54,7 +54,7 @@ type CoverLetterDraft = {
   signature?: string;
 };
 
-const GeneratePage = () => {
+const GeneratePageContent = () => {
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type');
   const initialFocus = searchParams.get('focus');
@@ -760,6 +760,14 @@ const GeneratePage = () => {
         ) : null}
       </div>
     </ProtectedRoute>
+  );
+};
+
+const GeneratePage = () => {
+  return (
+    <Suspense fallback={<div />}>
+      <GeneratePageContent />
+    </Suspense>
   );
 };
 
