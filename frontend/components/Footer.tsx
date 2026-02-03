@@ -142,10 +142,10 @@ const Footer = ({ variant = 'full' }: FooterProps) => {
             </p>
             <div className='text-sm text-white/70'>
               <p>careerIDream HQ</p>
-              <p>748 Market Street</p>
-              <p>San Francisco, CA 94103</p>
+              <p>RTC comlex</p>
+              <p>Visakhapatnam, AP 530020</p>
               <p className='mt-3 text-xs text-white/50'>
-                hello@careeridream.ai
+                mtdharma97@gmail.com
               </p>
             </div>
           </div>
