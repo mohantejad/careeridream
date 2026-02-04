@@ -158,13 +158,15 @@ REST_FRAMEWORK = {
 }
 
 REDIRECT_URLS = [u.strip() for u in getenv('REDIRECT_URLS', '').split(',') if u.strip()]
+SEND_ACTIVATION_EMAIL = getenv('SEND_ACTIVATION_EMAIL', 'True').lower() in ('1', 'true', 'yes', 'on')
+SEND_CONFIRMATION_EMAIL = getenv('SEND_CONFIRMATION_EMAIL', 'True').lower() in ('1', 'true', 'yes', 'on')
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '/password-reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '/username-reset/confirm/{uid}/{token}',
     'EMAIL_FRONTEND_DOMAIN': getenv('EMAIL_FRONTEND_DOMAIN', DOMAIN),
     'EMAIL_FRONTEND_SITE_NAME': 'CareerIDream',
-    'SEND_ACTIVATION_EMAIL': True,
-    'SEND_CONFIRMATION_EMAIL': True,
+    'SEND_ACTIVATION_EMAIL': SEND_ACTIVATION_EMAIL,
+    'SEND_CONFIRMATION_EMAIL': SEND_CONFIRMATION_EMAIL,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
     'ACTIVATION_URL': getenv('ACTIVATION_URL', '/users/activation/{uid}/{token}'),
