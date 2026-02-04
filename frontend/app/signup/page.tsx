@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { sora, space } from '@/app/fonts';
 import Header from '@/components/Header';
@@ -28,6 +29,7 @@ type SignupFormData = {
 };
 
 const SignupPage = () => {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [status, setStatus] = useState<{
@@ -81,10 +83,12 @@ const SignupPage = () => {
 
       setStatus({
         type: 'success',
-        message:
-          'Account created! Check your email to activate your account before logging in.',
+        message: 'Account created successfully. You can log in now.',
       });
       reset();
+      setTimeout(() => {
+        router.push('/login');
+      }, 800);
     } catch {
       setStatus({
         type: 'error',
@@ -154,7 +158,7 @@ const SignupPage = () => {
                   Create your careerIDream account
                 </h1>
                 <p className='text-sm text-white/70'>
-                  Use your email and we will send you a verification link.
+                  Use your email to create an account.
                 </p>
               </div>
 
