@@ -390,7 +390,25 @@ const OnboardingPage = () => {
     setStatusMessage('');
     const formData = new FormData();
     formData.append('profile', JSON.stringify(profileDraft));
-    formData.append('skills', JSON.stringify(skills));
+    const normalizedSkills = skills.map((skill) => {
+      const raw = (skill.proficiency ?? '').toString().trim();
+      if (!raw) {
+        return { ...skill, proficiency: '' };
+      }
+      const normalized = raw.toLowerCase();
+      const aliasMap: Record<string, string> = {
+        basic: 'beginner',
+        beginner: 'beginner',
+        intermediate: 'intermediate',
+        advanced: 'advanced',
+        expert: 'expert',
+      };
+      return {
+        ...skill,
+        proficiency: aliasMap[normalized] ?? normalized,
+      };
+    });
+    formData.append('skills', JSON.stringify(normalizedSkills));
     const cleanedExperiences = experiences.map((exp) => ({
       ...exp,
       start_date: exp.start_date || null,

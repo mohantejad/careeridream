@@ -24,6 +24,28 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class SkillSerializer(serializers.ModelSerializer):
     '''Serializer for skill entries.'''
+    proficiency = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    def validate_proficiency(self, value):
+        if value is None:
+            return ''
+        normalized = str(value).strip().lower()
+        if not normalized:
+            return ''
+        alias_map = {
+            'basic': Skill.Proficiency.BEGINNER,
+            'beginner': Skill.Proficiency.BEGINNER,
+            'intermediate': Skill.Proficiency.INTERMEDIATE,
+            'advanced': Skill.Proficiency.ADVANCED,
+            'expert': Skill.Proficiency.EXPERT,
+        }
+        if normalized in alias_map:
+            return alias_map[normalized]
+        for choice_value, choice_label in Skill.Proficiency.choices:
+            if normalized == choice_label.lower():
+                return choice_value
+        return value
+
     class Meta:
         model = Skill
         fields = ['id', 'name', 'proficiency', 'order']

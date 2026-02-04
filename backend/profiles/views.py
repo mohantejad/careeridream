@@ -165,8 +165,40 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                     return None
             return value
 
+        def normalize_skill_proficiency(value):
+            if value is None:
+                return ''
+            normalized = str(value).strip().lower()
+            if not normalized:
+                return ''
+            alias_map = {
+                'basic': 'beginner',
+                'beginner': 'beginner',
+                'intermediate': 'intermediate',
+                'advanced': 'advanced',
+                'expert': 'expert',
+            }
+            if normalized in alias_map:
+                return alias_map[normalized]
+            return value
+
+        def normalize_skills(payload):
+            if payload is None:
+                return None
+            if not isinstance(payload, list):
+                return payload
+            normalized_payload = []
+            for item in payload:
+                if not isinstance(item, dict):
+                    normalized_payload.append(item)
+                    continue
+                cleaned = dict(item)
+                cleaned['proficiency'] = normalize_skill_proficiency(item.get('proficiency'))
+                normalized_payload.append(cleaned)
+            return normalized_payload
+
         profile_payload = parse_payload(request.data.get('profile'))
-        skills_payload = parse_payload(request.data.get('skills'))
+        skills_payload = normalize_skills(parse_payload(request.data.get('skills')))
         experiences_payload = parse_payload(request.data.get('experiences'))
         educations_payload = parse_payload(request.data.get('educations'))
         certifications_payload = parse_payload(request.data.get('certifications'))
