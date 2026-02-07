@@ -108,3 +108,5 @@ python3 manage.py runserver
 
 ## License
 Prototype code for personal/portfolio use.
+
+The application is designed with a subscription model in mind. Payment integration (Stripe) was intentionally deferred to focus on core product functionality and AI features.
