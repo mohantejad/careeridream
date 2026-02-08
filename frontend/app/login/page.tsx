@@ -19,8 +19,6 @@ const GOOGLE_OAUTH_URL =
     GOOGLE_REDIRECT_URI
   )}`;
 
-  console.log('hi')
-
 type LoginFormData = {
   email: string;
   password: string;
@@ -64,9 +62,26 @@ const LoginPage = () => {
 
       if (!response.ok) {
         const errorData = (await response.json()) as Record<string, string[]>;
-        const fallback = "Invalid email or password.";
-        const firstError = Object.values(errorData)[0]?.[0] ?? fallback;
-        setStatus({ type: "error", message: firstError });
+        const rawMessage =
+          Object.values(errorData)[0]?.[0] ??
+          (errorData.detail as unknown as string) ??
+          "";
+        const normalized = String(rawMessage).toLowerCase();
+        if (
+          response.status === 401 ||
+          normalized.includes("no active account") ||
+          normalized.includes("credentials")
+        ) {
+          setStatus({
+            type: "error",
+            message: "User with that email is not registered.",
+          });
+          return;
+        }
+        setStatus({
+          type: "error",
+          message: rawMessage || "Invalid email or password.",
+        });
         return;
       }
 

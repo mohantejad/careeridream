@@ -20,6 +20,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['id', 'profile_completeness', 'updated_at']
+        extra_kwargs = {
+            'headline': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'summary': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'location': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'phone': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'resume_file': {'required': False, 'allow_null': True},
+        }
 
 
 class SkillSerializer(serializers.ModelSerializer):
@@ -49,6 +56,10 @@ class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = ['id', 'name', 'proficiency', 'order']
+        extra_kwargs = {
+            'name': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'order': {'required': False, 'allow_null': True},
+        }
 
 
 class ExperienceSerializer(serializers.ModelSerializer):
@@ -66,6 +77,16 @@ class ExperienceSerializer(serializers.ModelSerializer):
             'description',
             'order',
         ]
+        extra_kwargs = {
+            'company': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'title': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'location': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'start_date': {'required': False, 'allow_null': True},
+            'end_date': {'required': False, 'allow_null': True},
+            'is_current': {'required': False, 'allow_null': True},
+            'description': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'order': {'required': False, 'allow_null': True},
+        }
 
 
 class EducationSerializer(serializers.ModelSerializer):
@@ -82,6 +103,15 @@ class EducationSerializer(serializers.ModelSerializer):
             'description',
             'order',
         ]
+        extra_kwargs = {
+            'school': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'degree': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'field_of_study': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'start_date': {'required': False, 'allow_null': True},
+            'end_date': {'required': False, 'allow_null': True},
+            'description': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'order': {'required': False, 'allow_null': True},
+        }
 
 
 class CertificationSerializer(serializers.ModelSerializer):
@@ -97,6 +127,14 @@ class CertificationSerializer(serializers.ModelSerializer):
             'credential_url',
             'order',
         ]
+        extra_kwargs = {
+            'name': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'issuer': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'issue_date': {'required': False, 'allow_null': True},
+            'expiration_date': {'required': False, 'allow_null': True},
+            'credential_url': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'order': {'required': False, 'allow_null': True},
+        }
 
 
 class AchievementSerializer(serializers.ModelSerializer):
@@ -104,6 +142,12 @@ class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = ['id', 'title', 'description', 'date', 'order']
+        extra_kwargs = {
+            'title': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'description': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'date': {'required': False, 'allow_null': True},
+            'order': {'required': False, 'allow_null': True},
+        }
 
 
 class UserProfileDetailSerializer(UserProfileSerializer):
